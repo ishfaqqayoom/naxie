@@ -1,0 +1,8 @@
+# Naxie
+
+d:\naxie
+
+node_modules/
+dist/
+*.log
+.DS_Store

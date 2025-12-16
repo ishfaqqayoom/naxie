@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* Poppins */
+  @font-face {
+    font-family: 'Poppins';
+    src: url('../assets/fonts/Poppins/Poppins-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Poppins';
+    src: url('../assets/fonts/Poppins/Poppins-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Poppins';
+    src: url('../assets/fonts/Poppins/Poppins-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  /* Syne */
+  @font-face {
+    font-family: 'Syne';
+    src: url('../assets/fonts/Syne-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Syne';
+    src: url('../assets/fonts/Syne-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Syne';
+    src: url('../assets/fonts/Syne-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Syne';
+    src: url('../assets/fonts/Syne-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Syne';
+    src: url('../assets/fonts/Syne-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+  }
+
+  /* Space Grotesk */
+  @font-face {
+    font-family: 'Space Grotesk';
+    src: url('../assets/fonts/SpaceGrotesk-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Space Grotesk';
+    src: url('../assets/fonts/SpaceGrotesk-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Space Grotesk';
+    src: url('../assets/fonts/SpaceGrotesk-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Space Grotesk';
+    src: url('../assets/fonts/SpaceGrotesk-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+  }
+
+  @font-face {
+    font-family: 'Space Grotesk';
+    src: url('../assets/fonts/SpaceGrotesk-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --background-dark: 214, 32%, 91%;
+    --background-light: 222.86 100% 98.63%;
+
+    /* Font Variables */
+    --font-poppins: 'Poppins', sans-serif;
+    --font-syne-regular: 'Syne', sans-serif;
+    --font-syne-medium: 'Syne', sans-serif;
+    --font-syne-semi-bold: 'Syne', sans-serif;
+    --font-syne-bold: 'Syne', sans-serif;
+    --font-syne-extra-bold: 'Syne', sans-serif;
+
+    --font-space-grotesk-light: 'Space Grotesk', sans-serif;
+    --font-space-grotesk-regular: 'Space Grotesk', sans-serif;
+    --font-space-grotesk-medium: 'Space Grotesk', sans-serif;
+    --font-space-grotesk-semi-bold: 'Space Grotesk', sans-serif;
+    --font-space-grotesk-bold: 'Space Grotesk', sans-serif;
+    /* F8FAFF */
+    --foreground: 229 84% 5%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 229 84% 5%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 245 54% 52%;
+    --primary-light: 210 100% 88%;
+    --primary-dark: 234 50% 16%;
+    --primary-foreground: 219, 100%, 92%;
+
+    --primary-blue: 269 93% 45%;
+    --primary-blue-foreground: 0 0% 98%;
+
+    --button-gradient--0: 308 57% 57%;
+    /* D052C0 */
+    --button-gradient--100: 269 90% 39%;
+    /* 600ABD */
+
+    --primary-blue--50: 268 94% 75%;
+    /* BD85FB */
+    --primary-blue--60: 267 85% 70%;
+    /* AA70F3 */
+    --primary-blue--70: 267 85% 70%;
+    /* AA70F3 */
+    --primary-blue--80: 265 79% 64%;
+    /* 9759EC */
+    --primary-blue--90: 265 76.36% 56.86%;
+    /* 833DE5 */
+    --primary-blue--100: 269 93% 45%;
+    /* 7008E0 */
+
+    --neon-orange: 22 100% 50%;
+    --neon-orange-foreground: 0 0% 98%;
+
+    --neon-orange--50: 21 100% 89%;
+    /* FFDBC7 */
+    --neon-orange--60: 23 100% 81%;
+    /* FFC5A0 */
+    --neon-orange--70: 23 100% 78%;
+    /* FFB98D */
+    --neon-orange--80: 76 72% 31%;
+    /* FFA067 */
+    --neon-orange--90: 21 100% 62%;
+    /* FF823F */
+    --neon-orange--100: 22 100% 50%;
+    /* FF5C00 */
+
+    --plum-pink: 323 59% 43%;
+    --plum-pink-foreground: 0 0% 98%;
+
+    --plum-pink--50: 322 100% 84%;
+    /* FFADE1 */
+    --plum-pink--60: 322 84% 80%;
+    /* F7A0D7 */
+    --plum-pink--70: 323 68% 72%;
+    /* E886C3 */
+    --plum-pink--80: 334 51% 70%;
+    /* D98BAD */
+    --plum-pink--90: 324 51% 54%;
+    /* C54E96 */
+    --plum-pink--100: 323 59% 43%;
+    /* AF2D7D */
+
+    --iris: 245.49 82.94% 58.63%;
+    --iris-foreground: 0 0% 98%;
+
+    --iris--60: 322 84% 80%;
+    /* A5A6F6 */
+    --iris--80: 240 81% 71%;
+    /* 7879F1 */
+    --iris--100: 245.49 82.94% 58.63%;
+    /* 4E3EED */
+
+    --charcoal: 0 0% 29.41%;
+    /* 4B4B4B */
+    --charcoal-foreground: 0 0% 98%;
+
+    --black: 221 39% 11%;
+    /* 111827 */
+    --black-foreground: 0 0% 98%;
+
+    --card-background: 225 100% 91%;
+    /* D2DDFF */
+    --card-background2: 278.57 100% 97.25%;
+    /* FAF1FF - hover */
+
+    --purple: 292 77% 35%;
+    --purple-foreground: 0 0% 3.9%;
+
+    --secondary: 214 30% 91;
+    --secondary-dark: 208 7% 38%;
+    --secondary-foreground: 210 40% 98%;
+
+    --success: 133 63% 43%;
+    --success-dark: 133 63% 35%;
+    --success-foreground: 210 40% 98%;
+
+    --info: 200 61% 55%;
+    --info-dark: 200 61% 47%;
+    --info-foreground: 210 40% 98%;
+
+    --warning: 41 91% 55%;
+    --warning-dark: 41 91% 47%;
+    --warning-foreground: 210 40% 98%;
+
+    --destructive: 350 80% 63%;
+    --destructive-dark: 350 80% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --light: 210 17% 98%;
+    --light-dark: 210 17% 90%;
+    --light-foreground: 209 23% 23%;
+
+    --dark: 209 23% 23%;
+    --dark-dark: 209 23% 15%;
+    --dark-foreground: 210 40% 98%;
+
+    --muted: 227 100% 98%;
+    --muted-dark: 210, 3%, 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --slate: 222 47% 11%;
+    --slate-foreground: 222 47% 11%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 215, 16%, 47%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --background-dark: 217 33% 17%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 245 54% 52%;
+    --primary-light: 234 50% 24%;
+    --primary-dark: 234 50% 16%;
+    --primary-foreground: 234 50% 24%;
+
+    --secondary: 214 30% 91%;
+    --secondary-dark: 208 7% 38%;
+    --secondary-foreground: 210 40% 98%;
+
+    --success: 133 63% 43%;
+    --success-dark: 133 63% 35%;
+    --success-foreground: 210 40% 98%;
+
+    --info: 200 61% 55%;
+    --info-dark: 200 61% 47%;
+    --info-foreground: 210 40% 98%;
+
+    --warning: 41 91% 55%;
+    --warning-dark: 41 91% 47%;
+    --warning-foreground: 210 40% 98%;
+
+    --destructive: 350 80% 63%;
+    --destructive-dark: 350 80% 55%;
+    --destructive-foreground: 210 40% 98%;
+
+    --light: 210 17% 98%;
+    --light-dark: 210 17% 90%;
+    --light-foreground: 209 23% 23%;
+
+    --dark: 209 23% 23%;
+    --dark-dark: 209 23% 15%;
+    --dark-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 215, 16%, 47%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
