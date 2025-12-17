@@ -1,6 +1,7 @@
 {
-  "name": "@cognax/naxie",
-  "version": "1.0.0",
+  "name": "@ishfaqqayoom/naxie",
+  "version": "1.0.10",
+   "access": "public",
   "description": "A reusable chat bubble component with AI-powered conversation capabilities",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

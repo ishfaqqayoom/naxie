@@ -69,7 +69,7 @@ export default function Home() {
         defaultOpen={false}
         apiConfig={{
           baseUrl: 'https://dev-api.cognax.ai/api', // Hardcoded base URL for demo, could make this configurable too
-          apiKey: apiKey
+          apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWRjMGQxMTktZmRhYi00OTBkLWI0NWItMDdkNTI1Mzc0MzEyIiwib3JnYW5pc2F0aW9uX2lkIjoiZDk2ZTliZWQtZTUxZS00NmY5LWEzZDYtYWY4YWQ5NDYyMWU5IiwiZW1haWwiOiJhZG1pbkBjb2duYXhkZXYuYWkiLCJyb2xlIjoiYWRtaW4iLCJwYXNzd29yZF9zdGF0dXMiOnRydWUsImV4cCI6MTc2NjAzNzE4N30.NfbxfjXLm0Z8aP9AS-W4g9UaKsNPV6PGr3HQNciLjYE'
         }}
       />
     </main>

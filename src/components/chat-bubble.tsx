@@ -12,8 +12,12 @@ import { ChatComponentProps } from '@/types';
 
 import { Toaster } from '@/components/ui/toaster';
 
+const DEFAULT_WEBSOCKET_CONFIG = {
+  endpoint: 'answer/ws',
+  baseUrl: 'wss://dev-api.cognax.ai/api',
+};
+
 export function ChatComponent({
-  websocketConfig,
   title = 'Chat with Dashboard',
   placeholder = 'Ask a question',
   className = '',
@@ -21,7 +25,12 @@ export function ChatComponent({
   showBubble = true,
   customData = {},
   apiConfig,
+  websocketConfig = DEFAULT_WEBSOCKET_CONFIG,
 }: ChatComponentProps) {
+  const finalApiConfig = {
+    baseUrl: 'https://dev-api.cognax.ai/api',
+    ...apiConfig,
+  } as any;
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isMaximize, setIsMaximize] = useState(false);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
@@ -95,7 +104,7 @@ export function ChatComponent({
                 websocketConfig={websocketConfig}
                 customData={customData}
                 placeholder={placeholder}
-                apiConfig={apiConfig}
+                apiConfig={finalApiConfig}
               />
             </div>
           </div>

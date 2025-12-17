@@ -149,15 +149,15 @@ export function InputChat({
       };
 
       // if (apiConfig?.apiKey) {
-      //     payload.api_key = apiConfig.apiKey;
+      //   payload.api_key = apiConfig.apiKey;
       // }
 
       sendMessage(payload);
 
       setQuery('');
-      // Reset height
       if (textareaRef.current) {
         textareaRef.current.style.height = '56px';
+        textareaRef.current.value = ''; // Force clear DOM element too just in case
       }
 
     } else {

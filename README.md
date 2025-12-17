@@ -15,7 +15,7 @@ A reusable, AI-powered chat bubble component for React applications with WebSock
 ## Installation
 
 ```bash
-npm install naxie
+npm install @ishfaqqayoom/naxie
 ```
 
 ### Prerequisites
@@ -26,64 +26,20 @@ Your project must have:
 
 ## Quick Start
 
-### Basic Usage with WebSocket
+### Basic Usage
 
 ```tsx
-import { ChatComponent } from 'naxie';
-import 'naxie/dist/style.css';
+import { ChatComponent } from '@ishfaqqayoom/naxie';
+import '@ishfaqqayoom/naxie/style.css';
 
 function App() {
   return (
     <ChatComponent
-      websocketConfig={{
-        endpoint: 'chat',
-        baseUrl: 'wss://your-api.com',
-        onConnect: () => console.log('Connected'),
-        onDisconnect: () => console.log('Disconnected'),
+      title="Chat with Naxie"
+      placeholder="Ask a question about your data..."
+      apiConfig={{
+        apiKey: 'your-api-key'
       }}
-      title="AI Assistant"
-      placeholder="Ask me anything..."
-    />
-  );
-}
-```
-
-### Controlled Mode (Custom Message Handling)
-
-```tsx
-import { ChatComponent, Message } from 'naxie';
-import { useState } from 'react';
-
-function App() {
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const handleSendMessage = async (message: string) => {
-    // Add user message
-    setMessages(prev => [...prev, { 
-      sendMessage: message, 
-      receivedMessage: '' 
-    }]);
-
-    // Call your API
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      body: JSON.stringify({ message }),
-    });
-    const data = await response.json();
-
-    // Update with response
-    setMessages(prev => {
-      const updated = [...prev];
-      updated[updated.length - 1].receivedMessage = data.response;
-      return updated;
-    });
-  };
-
-  return (
-    <ChatComponent
-      messages={messages}
-      onSendMessage={handleSendMessage}
-      title="Custom Chat"
     />
   );
 }
@@ -97,7 +53,7 @@ Add the package path to your `tailwind.config.js`:
 module.exports = {
   content: [
     './src/**/*.{js,ts,jsx,tsx}',
-    './node_modules/naxie/dist/**/*.{js,ts,jsx,tsx}', // Add this line
+    './node_modules/@ishfaqqayoom/naxie/dist/**/*.{js,ts,jsx,tsx}', // Add this line
   ],
   // ... rest of your config
 }
@@ -109,10 +65,8 @@ module.exports = {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `websocketConfig` | `WebSocketConfig` | - | WebSocket configuration object |
-| `messages` | `Message[]` | - | Controlled mode: array of messages |
-| `onSendMessage` | `(message: string) => Promise<void>` | - | Controlled mode: message send handler |
-| `onMessageReceived` | `(message: Message) => void` | - | Callback when message is received |
+| `apiConfig` | `{ apiKey: string; baseUrl?: string }` | - | API configuration. `baseUrl` defaults to `https://dev-api.cognax.ai/api`. |
+| `websocketConfig` | `WebSocketConfig` | `{ endpoint: 'answer/ws', baseUrl: 'wss://dev-api.cognax.ai/api' }` | WebSocket configuration object. Defaults are pre-configured. |
 | `title` | `string` | `'Chat with Dashboard'` | Chat header title |
 | `placeholder` | `string` | `'Ask a question'` | Input placeholder text |
 | `className` | `string` | `''` | Additional CSS classes |
@@ -120,57 +74,7 @@ module.exports = {
 | `showBubble` | `boolean` | `true` | Show/hide the chat bubble button |
 | `customData` | `Record<string, any>` | `{}` | Custom data to include in WebSocket messages |
 
-### WebSocketConfig
-
-```typescript
-interface WebSocketConfig {
-  endpoint: string;           // WebSocket endpoint (e.g., 'chat')
-  baseUrl?: string;          // Base URL (e.g., 'wss://api.example.com')
-  onConnect?: () => void;    // Connection callback
-  onDisconnect?: () => void; // Disconnection callback
-  onError?: (error: Event) => void; // Error callback
-}
-```
-
-### Message
-
-```typescript
-interface Message {
-  sendMessage: string;      // User's message
-  receivedMessage: string;  // AI/Server response
-  refs?: any;              // Optional references for links
-}
-```
-
-## Advanced Usage
-
-### Using WebSocket Service Directly
-
-```typescript
-import { createWebSocketService } from 'naxie';
-
-const wsService = createWebSocketService({
-  endpoint: 'chat',
-  baseUrl: 'wss://your-api.com',
-  onConnect: () => console.log('Connected'),
-});
-
-// Connect
-wsService.connect();
-
-// Send message
-wsService.send({ message: 'Hello' });
-
-// Add message handler
-wsService.addMessageHandler((data) => {
-  console.log('Received:', data);
-});
-
-// Disconnect
-wsService.disconnect();
-```
-
-### Custom Styling
+## Custom Styling
 
 The component uses Tailwind CSS. You can override styles by:
 
@@ -192,39 +96,6 @@ module.exports = {
 }
 ```
 
-## Message Format
-
-### Text Response
-```json
-{
-  "sendMessage": "What is the weather?",
-  "receivedMessage": "The weather is sunny today."
-}
-```
-
-### Table Response
-```json
-{
-  "sendMessage": "Show me sales data",
-  "receivedMessage": "{\"columns\":[\"Product\",\"Sales\"],\"rows\":[[\"A\",100],[\"B\",200]]}"
-}
-```
-
-### Error Response
-```json
-{
-  "sendMessage": "Invalid query",
-  "receivedMessage": "{\"status_code\":400,\"message\":\"Error message\"}"
-}
-```
-
-## Examples
-
-Check out the `examples/` directory for complete working examples:
-- Basic WebSocket integration
-- Custom message handlers
-- Styling customization
-
 ## TypeScript Support
 
 Naxie is written in TypeScript and includes full type definitions. Import types as needed:
@@ -232,9 +103,8 @@ Naxie is written in TypeScript and includes full type definitions. Import types 
 ```typescript
 import type { 
   ChatComponentProps, 
-  Message, 
   WebSocketConfig 
-} from 'naxie';
+} from '@ishfaqqayoom/naxie';
 ```
 
 ## Browser Support
