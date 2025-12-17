@@ -128,10 +128,6 @@ export function InputChat({
       ).toString();
 
       // Send message via WebSocket with ALL features
-      // Add apiConfig.apiKey if present for backend authentication/tracking if needed by socket
-      // But typically socket auth is done on connection. 
-      // The requirement was: "User ID/ API token needs to be passed"
-      // If the socket message needs it, we add it. 
       const payload: any = {
         user_query: query,
         session_id: sessionId,
@@ -403,13 +399,6 @@ export function InputChat({
           </div>
 
           <div className='flex items-center space-x-2'>
-            {/* Character counter */}
-            {query.length > 0 && (
-              <span className='text-xs text-gray-400'>
-                {query.length} chars
-              </span>
-            )}
-
             <SettingPopOver
               settings={settings}
               onSettingsChange={handleSettingsChange}

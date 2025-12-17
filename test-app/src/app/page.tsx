@@ -42,12 +42,8 @@ export default function Home() {
           <h3 className="text-lg font-semibold mb-2 text-gray-700">2. Use the Component</h3>
           <div className="bg-gray-100 p-4 rounded-lg font-mono text-sm mb-4">
             <pre>{`<ChatComponent
-  websocketConfig={{
-    endpoint: 'dashboard/chat',
-    baseUrl: process.env.NEXT_PUBLIC_API_ENDPOINT_SOCKET
-  }}
+
   apiConfig={{
-    baseUrl: 'https://api.cognax.ai/api', // or your base url
     apiKey: 'your-api-key'
   }}
   title="Chat with Naxie"
@@ -57,18 +53,11 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Naxie Chat Component */}
       <ChatComponent
-        websocketConfig={{
-          endpoint: 'answer/ws',
-          baseUrl: process.env.NEXT_PUBLIC_API_ENDPOINT_SOCKET || 'wss://dev-api.cognax.ai/api',
-        }}
-
         title="Chat with Naxie"
         placeholder="Ask a question about your data..."
         defaultOpen={false}
         apiConfig={{
-          baseUrl: 'https://dev-api.cognax.ai/api', // Hardcoded base URL for demo, could make this configurable too
           apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWRjMGQxMTktZmRhYi00OTBkLWI0NWItMDdkNTI1Mzc0MzEyIiwib3JnYW5pc2F0aW9uX2lkIjoiZDk2ZTliZWQtZTUxZS00NmY5LWEzZDYtYWY4YWQ5NDYyMWU5IiwiZW1haWwiOiJhZG1pbkBjb2duYXhkZXYuYWkiLCJyb2xlIjoiYWRtaW4iLCJwYXNzd29yZF9zdGF0dXMiOnRydWUsImV4cCI6MTc2NjAzNzE4N30.NfbxfjXLm0Z8aP9AS-W4g9UaKsNPV6PGr3HQNciLjYE'
         }}
       />

@@ -31,7 +31,7 @@ export interface WebSocketConfig {
  */
 export interface ApiConfig {
     /** HTTP base URL (e.g. https://api.cognax.ai/api) */
-    baseUrl: string;
+    baseUrl?: string;
     /** API Key for authorization */
     apiKey: string;
 }

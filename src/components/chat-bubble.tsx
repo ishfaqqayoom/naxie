@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { MessageSquare, X, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TypographyH3 } from '@/components/ui/typography';
@@ -27,10 +27,10 @@ export function ChatComponent({
   apiConfig,
   websocketConfig = DEFAULT_WEBSOCKET_CONFIG,
 }: ChatComponentProps) {
-  const finalApiConfig = {
+  const finalApiConfig = useMemo(() => ({
     baseUrl: 'https://dev-api.cognax.ai/api',
     ...apiConfig,
-  } as any;
+  } as any), [apiConfig]);
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [isMaximize, setIsMaximize] = useState(false);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
