@@ -1,6 +1,6 @@
 import { TypographyP } from '@/components/ui/typography';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Copy, FileMinus } from 'lucide-react'; // Added FileMinus
+import { User, Copy, FileMinus, RefreshCcw } from 'lucide-react'; // Added RefreshCcw
 import {
   Tooltip,
   TooltipContent,
@@ -10,10 +10,10 @@ import {
 import { useEffect, useRef, useState, Fragment } from 'react';
 import { ThreeDots } from 'react-loader-spinner';
 import MarkdownComponent from './markdown';
-import { Button } from '@/components/ui/button'; // Added Button
+import { Button } from '@/components/ui/button';
 import { ChatBubbleListProps } from '@/types';
 
-export function ChatBubbleList({ chatHistory }: ChatBubbleListProps) {
+export function ChatBubbleList({ chatHistory, onRegenerate }: ChatBubbleListProps) {
   const chatListRef = useRef<HTMLDivElement | null>(null);
   const [copyStatus, setCopyStatus] = useState<{ [key: number]: string }>({});
   const [tooltipOpen, setTooltipOpen] = useState<{ [key: number]: boolean }>({});
@@ -33,7 +33,6 @@ export function ChatBubbleList({ chatHistory }: ChatBubbleListProps) {
       });
   };
 
-  // Stub for gotoParagraph since we don't have document viewer context
   const gotoParagraph = (ref: any) => {
     console.log('Jump to reference:', ref);
   };
@@ -46,12 +45,12 @@ export function ChatBubbleList({ chatHistory }: ChatBubbleListProps) {
 
   return (
     <div
-      className='bg-muted overflow-y-auto scroll-smooth h-full' // Changed max-h to h-full for container
+      className='bg-muted overflow-y-auto scroll-smooth h-full'
       ref={chatListRef}>
       {chatHistory.map((message: any, index: number) => (
         <Fragment key={index}>
           {message.sendMessage && message.sendMessage !== '' && (
-            <div className='w-[90%] flex mx-auto mt-4'> {/* Adapted w-[37vw] to w-[90%] */}
+            <div className='w-[90%] flex mx-auto mt-4'>
               <Avatar className='bg-blackA1 inline-flex h-[30px] w-[30px] select-none items-center justify-center overflow-hidden rounded-full align-middle'>
                 <AvatarFallback className='text-violet11 leading-1 flex h-full w-full items-center justify-center bg-secondary text-[15px] font-medium'>
                   <User color='#4318FF' size={18} />
@@ -87,7 +86,6 @@ export function ChatBubbleList({ chatHistory }: ChatBubbleListProps) {
                   style={{ marginRight: '1px', marginBottom: '1px' }}
                 />
                 <AvatarFallback className='bg-primary text-white'>
-                  {/* Fallback if image missing */}
                   AI
                 </AvatarFallback>
               </Avatar>
@@ -97,111 +95,133 @@ export function ChatBubbleList({ chatHistory }: ChatBubbleListProps) {
                   <MarkdownComponent content={message.receivedMessage} />
                 </TypographyP>
 
-                {/* Reference Section Ported */}
-                {message.refs && message.refs.refs && ( // Adapted refs access
-                  <div className='flex justify-between mt-2 pt-2 border-t border-gray-100'>
-                    <div>
-                      <div className='flex flex-wrap items-center'>
-                        <TooltipProvider>
-                          <Tooltip
-                            open={tooltipOpen[index]}
-                            onOpenChange={(open) =>
-                              setTooltipOpen({ ...tooltipOpen, [index]: open })
-                            }>
-                            <TooltipTrigger asChild>
-                              <Copy
-                                className='cursor-pointer text-gray-400 hover:text-blue-500 mr-2'
-                                strokeWidth={1}
-                                size={16}
-                                onClick={() => {
-                                  handleCopyClick(
-                                    message.receivedMessage,
-                                    index
-                                  );
-                                  setTooltipOpen({
-                                    ...tooltipOpen,
-                                    [index]: true
-                                  });
-                                }}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <TypographyP className='text-xs'>
-                                {copyStatus[index] || 'copy'}
-                              </TypographyP>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                {/* Reference Section */}
+                <div className='flex justify-between mt-2 pt-2 border-t border-gray-100'>
+                  <div>
+                    <div className='flex flex-wrap items-center'>
+                      {/* Copy Button */}
+                      <TooltipProvider>
+                        <Tooltip
+                          open={tooltipOpen[index]}
+                          onOpenChange={(open) =>
+                            setTooltipOpen({ ...tooltipOpen, [index]: open })
+                          }>
+                          <TooltipTrigger asChild>
+                            <Copy
+                              className='cursor-pointer text-gray-400 hover:text-blue-500 mr-2'
+                              strokeWidth={1}
+                              size={16}
+                              onClick={() => {
+                                handleCopyClick(
+                                  message.receivedMessage,
+                                  index
+                                );
+                                setTooltipOpen({
+                                  ...tooltipOpen,
+                                  [index]: true
+                                });
+                              }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <TypographyP className='text-xs'>
+                              {copyStatus[index] || 'copy'}
+                            </TypographyP>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
 
-                        {!showRefs[index]
-                          ? message.refs.refs
-                            .slice(0, 3)
-                            .map((reference: any, idx: any) => (
-                              <Button
-                                onClick={() => gotoParagraph(reference)}
-                                key={idx}
-                                variant='ghost'
-                                size='sm'
-                                className='p-1 font-light text-primary border-none rounded-lg text-xs hover:text-accent-foreground hover:bg-primary-light m-1 h-auto'>
-                                <FileMinus
-                                  strokeWidth={1}
-                                  size={14}
-                                  className='mr-1 text-primary'
-                                />
-                                Ref {idx + 1}
-                              </Button>
-                            ))
-                          : message.refs.refs.map(
-                            (reference: any, idx: any) => (
-                              <Button
-                                onClick={() => gotoParagraph(reference)}
-                                key={idx}
-                                variant='ghost'
-                                size='sm'
-                                className='p-1 font-light text-primary border-none rounded-lg text-xs hover:text-accent-foreground hover:bg-primary-light m-1 h-auto'>
-                                <FileMinus
-                                  strokeWidth={1}
-                                  size={14}
-                                  className='mr-1 text-primary'
-                                />
-                                Ref {idx + 1}
-                              </Button>
-                            )
-                          )}
+                      {/* Regenerate Button */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <RefreshCcw
+                              className='cursor-pointer text-gray-400 hover:text-blue-500 mr-2'
+                              strokeWidth={1}
+                              size={16}
+                              onClick={() => onRegenerate?.(message, index)}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <TypographyP className='text-xs'>
+                              Regenerate
+                            </TypographyP>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
 
-                        {!showRefs[index] && message.refs.refs.length > 3 ? (
-                          <TypographyP
-                            className='cursor-pointer text-xs text-primary border rounded-md p-1 px-2 hover:font-bold'
-                            onClick={() =>
-                              setShowRefs((prev) => ({
-                                ...prev,
-                                [index]: true
-                              }))
-                            }>
-                            more...
-                          </TypographyP>
-                        ) : (
-                          message.refs.refs.length > 3 && (
-                            <span
-                              role='button'
-                              tabIndex={0}
+                      {message.refs && message.refs.refs && (
+                        <>
+                          {!showRefs[index]
+                            ? message.refs.refs
+                              .slice(0, 3)
+                              .map((reference: any, idx: any) => (
+                                <Button
+                                  onClick={() => gotoParagraph(reference)}
+                                  key={idx}
+                                  variant='ghost'
+                                  size='sm'
+                                  className='p-1 font-light text-primary border-none rounded-lg text-xs hover:text-accent-foreground hover:bg-primary-light m-1 h-auto'>
+                                  <FileMinus
+                                    strokeWidth={1}
+                                    size={14}
+                                    className='mr-1 text-primary'
+                                  />
+                                  Ref {idx + 1}
+                                </Button>
+                              ))
+                            : message.refs.refs.map(
+                              (reference: any, idx: any) => (
+                                <Button
+                                  onClick={() => gotoParagraph(reference)}
+                                  key={idx}
+                                  variant='ghost'
+                                  size='sm'
+                                  className='p-1 font-light text-primary border-none rounded-lg text-xs hover:text-accent-foreground hover:bg-primary-light m-1 h-auto'>
+                                  <FileMinus
+                                    strokeWidth={1}
+                                    size={14}
+                                    className='mr-1 text-primary'
+                                  />
+                                  Ref {idx + 1}
+                                </Button>
+                              )
+                            )}
+
+                          {!showRefs[index] && message.refs.refs.length > 3 ? (
+                            <TypographyP
+                              className='cursor-pointer text-xs text-primary border rounded-md p-1 px-2 hover:font-bold'
                               onClick={() =>
                                 setShowRefs((prev) => ({
                                   ...prev,
-                                  [index]: false
+                                  [index]: true
                                 }))
                               }>
-                              <TypographyP
-                                className='cursor-pointer text-xs text-primary border rounded-md p-1 px-2 hover:font-bold'>
-                                less
-                              </TypographyP>
-                            </span>
-                          )
-                        )}
-                      </div>
+                              more...
+                            </TypographyP>
+                          ) : (
+                            message.refs.refs.length > 3 && (
+                              <span
+                                role='button'
+                                tabIndex={0}
+                                onClick={() =>
+                                  setShowRefs((prev) => ({
+                                    ...prev,
+                                    [index]: false
+                                  }))
+                                }>
+                                <TypographyP
+                                  className='cursor-pointer text-xs text-primary border rounded-md p-1 px-2 hover:font-bold'>
+                                  less
+                                </TypographyP>
+                              </span>
+                            )
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           )}

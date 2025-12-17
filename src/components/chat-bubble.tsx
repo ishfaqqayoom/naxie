@@ -35,6 +35,8 @@ export function ChatComponent({
   const [isMaximize, setIsMaximize] = useState(false);
   const [chatHistory, setChatHistory] = useState<any[]>([]);
 
+  const [regenerateRequest, setRegenerateRequest] = useState<any>(null);
+
   const texts = [
     'Chat with your data directly from the dashboard – insights at your fingertips.',
     'Seamlessly explore dashboards and tables through an AI-powered chat interface.',
@@ -49,6 +51,10 @@ export function ChatComponent({
 
   const toggleWidth = () => {
     setIsMaximize(!isMaximize);
+  };
+
+  const handleRegenerate = (message: any, index: number) => {
+    setRegenerateRequest({ message, index });
   };
 
   return (
@@ -88,7 +94,7 @@ export function ChatComponent({
         <div className='rounded-md backdrop-blur-md -mt-1'>
           <div className='flex flex-col justify-between min-h-[90vh] max-h-[90vh] overflow-y-auto bg-muted'>
             {chatHistory.length > 0 ? (
-              <ChatBubbleList chatHistory={chatHistory} />
+              <ChatBubbleList chatHistory={chatHistory} onRegenerate={handleRegenerate} />
             ) : (
               <CardHeader>
                 <CardDescription className='pt-3'>
@@ -105,6 +111,8 @@ export function ChatComponent({
                 customData={customData}
                 placeholder={placeholder}
                 apiConfig={finalApiConfig}
+                regenerateRequest={regenerateRequest}
+                onRegenerateComplete={() => setRegenerateRequest(null)}
               />
             </div>
           </div>

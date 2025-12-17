@@ -31,6 +31,8 @@ interface InputChatProps {
   customData?: Record<string, any>;
   placeholder?: string;
   apiConfig?: ApiConfig;
+  regenerateRequest?: any;
+  onRegenerateComplete?: () => void;
 }
 
 export function InputChat({
@@ -39,6 +41,8 @@ export function InputChat({
   customData = {},
   placeholder = 'Ask a question',
   apiConfig,
+  regenerateRequest,
+  onRegenerateComplete,
 }: InputChatProps) {
   const [query, setQuery] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -102,6 +106,63 @@ export function InputChat({
   useEffect(() => {
     handleInputResize();
   }, [query]);
+
+  // Regenerate Effect
+  useEffect(() => {
+    if (regenerateRequest) {
+      const { message, index } = regenerateRequest;
+
+      // Update history to remove checks/responses after this index
+      setChatHistory((prev: any[]) => {
+        // We want to keep up to this message, and clear its response
+        // Similar to reference implementation logic
+        const updatedHistory = [...prev];
+        if (index >= 0 && index < updatedHistory.length) {
+          updatedHistory[index].receivedMessage = '';
+          // Remove subsequent messages if any? Reference did splice(index + 1)
+          updatedHistory.splice(index + 1);
+        }
+        return updatedHistory;
+      });
+
+      // Send the query again
+      // We reusing handleQuerySend logic but query might be empty string in state
+      // So we call sendMessage directly or setQuery and trigger?
+      // Better to call sendMessage directly with the message content
+
+      if (message.sendMessage) {
+        if (isWebSocketOpen()) {
+          setLoading(true);
+          const sensitivityScore = parseFloat(
+            (0.1 + (settings.sensitivity - 1) * (0.89 / 99)).toFixed(2)
+          ).toString();
+
+          const payload: any = {
+            user_query: message.sendMessage,
+            session_id: sessionId,
+            model: modelName,
+            web_search: webSearch,
+            deep_research: deepSearch,
+            domain: settings.domain?.id,
+            tags: settings.tags.map(t => t.id),
+            score: sensitivityScore,
+            prompt: settings.prompt,
+            ...customData,
+          };
+          if (apiConfig?.apiKey) {
+            // payload.api_key = apiConfig.apiKey; // Keep commented as per previous instruction
+          }
+          sendMessage(payload);
+        } else {
+          // If socket not open, maybe connect? 
+          connectToWebSocket(websocketConfig || { endpoint: 'answer/ws' });
+          // Ideally we wait for connection, but for now simple re-connect trigger
+        }
+      }
+
+      onRegenerateComplete?.();
+    }
+  }, [regenerateRequest, setChatHistory, isWebSocketOpen, setLoading, settings, modelName, webSearch, deepSearch, sessionId, customData, apiConfig, sendMessage, connectToWebSocket, websocketConfig, onRegenerateComplete]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {

@@ -78,16 +78,22 @@ export interface ChatComponentProps {
  * Props for the InputChat component
  */
 export interface InputChatProps {
-  /** Callback when user sends a message */
-  onSendMessage: (message: string) => void;
-  /** Whether the chat is in loading state */
-  isLoading?: boolean;
+  /** Chat history state */
+  chatHistory: any;
+  /** Setter for chat history */
+  setChatHistory: (history: any) => void;
+  /** WebSocket configuration */
+  websocketConfig?: WebSocketConfig;
+  /** Custom data to pass to WebSocket */
+  customData?: Record<string, any>;
   /** Placeholder text for input */
   placeholder?: string;
-  /** Whether input is disabled */
-  disabled?: boolean;
-    /** API configuration for HTTP requests */
+  /** API configuration for HTTP requests */
   apiConfig?: ApiConfig;
+  /** Request object to regenerate a message */
+  regenerateRequest?: any;
+  /** Callback when regeneration is initiated */
+  onRegenerateComplete?: () => void;
 }
 
 /**
@@ -99,5 +105,6 @@ export interface ChatBubbleListProps {
   /** Callback when user copies a message */
   onCopyMessage?: (message: string) => void;
   /** Callback when user requests to regenerate a message */
-  onRegenerateMessage?: (messageId: string) => void;
+  /** Callback when user requests to regenerate a message */
+  onRegenerate?: (message: Message, index: number) => void;
 }
