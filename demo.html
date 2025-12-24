@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Naxie Vanilla Local Test</title>
+
+    <!-- 1. Load Local Styles (Ensures fonts and visibility are correct) -->
+    <link rel="stylesheet" href="./src/vanilla/style.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8fafc;
+        }
+
+        .status {
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Naxie Vanilla Verification Page</h1>
+    <div class="status">
+        <p><strong>Step 1:</strong> Run <code>npx serve .</code> in your terminal.</p>
+        <p><strong>Step 2:</strong> Open this page in your browser.</p>
+        <p><strong>Step 3:</strong> Click the floating bubble -> Click Settings Icon -> Verify it opens correctly.</p>
+    </div>
+
+    <div id="chat-container"></div>
+
+    <!-- 2. Import Map (Points to local dist files) -->
+    <script type="importmap">
+    {
+      "imports": {
+        "@ishfaqqayoom/naxie/vanilla": "./dist/vanilla/index.mjs"
+      }
+    }
+  </script>
+
+    <!-- 3. Initialize Naxie -->
+    <script type="module">
+        import { NaxieVanilla } from '@ishfaqqayoom/naxie/vanilla';
+
+        // Note: No apiConfig.baseUrl needed! Fallback will use websocketConfig.baseUrl
+        const chat = new NaxieVanilla(
+            document.getElementById('chat-container'),
+            {
+                title: 'Cognax Assistant',
+                placeholder: 'Ask a question',
+                apiConfig: {
+                    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWRjMGQxMTktZmRhYi00OTBkLWI0NWItMDdkNTI1Mzc0MzEyIiwib3JnYW5pc2F0aW9uX2lkIjoiZDk2ZTliZWQtZTUxZS00NmY5LWEzZDYtYWY4YWQ5NDYyMWU5IiwiZW1haWwiOiJhZG1pbkBjb2duYXhkZXYuYWkiLCJyb2xlIjoiYWRtaW4iLCJwYXNzd29yZF9zdGF0dXMiOnRydWUsImV4cCI6MTc2NjY0MzUyOH0.AqzK_XtGdqw0axgIMO3qLn0uX1rgD0jWrBHlissyPzk'
+                },
+                websocketConfig: {
+                    baseUrl: 'wss://dev-api.cognax.ai/api',
+                    endpoint: 'answer/ws'
+                }
+            }
+        );
+
+        // Verify events
+        chat.on('state-changed', (state) => console.log('UI State:', state));
+    </script>
+
+</body>
