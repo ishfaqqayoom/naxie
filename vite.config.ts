@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import dts from 'vite-plugin-dts';
 import { resolve } from 'path';
+import dts from 'vite-plugin-dts';
 
 export default defineConfig({
   plugins: [
@@ -9,32 +9,61 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
       include: ['src/**/*'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.test.tsx']
-    })
+      outDir: 'dist',
+    }),
   ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'Naxie',
+      entry: {
+        // Main entry (React - backward compatible)
+        index: resolve('src/index.ts'),
+        // Core services
+        'core/index': resolve('src/core/index.ts'),
+        // Vanilla JavaScript
+        'vanilla/index': resolve('src/vanilla/index.ts'),
+        // Angular
+        'angular/index': resolve('src/angular/index.ts'),
+        // Vue
+        'vue/index': resolve('src/vue/index.ts'),
+        // jQuery
+        'jquery/jquery.naxie': resolve('src/jquery/jquery.naxie.ts'),
+      },
       formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'js' : 'cjs'}`
     },
     rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime'],
+      external: [
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        '@angular/core',
+        '@angular/common',
+        'vue',
+        'jquery',
+      ],
       output: {
         globals: {
           react: 'React',
           'react-dom': 'ReactDOM',
-          'react/jsx-runtime': 'jsxRuntime'
-        }
-      }
+          'react/jsx-runtime': 'jsxRuntime',
+          vue: 'Vue',
+          jquery: 'jQuery',
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'index.css') {
+            return 'style.css';
+          }
+          if (assetInfo.name === 'style.css') {
+            return 'vanilla/style.css';
+          }
+          return assetInfo.name || 'assets/[name][extname]';
+        },
+      },
     },
-    sourcemap: true,
-    emptyOutDir: true
+    cssCodeSplit: true,
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src')
-    }
-  }
+      '@': resolve('./src'),
+    },
+  },
 });

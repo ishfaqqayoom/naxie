@@ -39,6 +39,9 @@
     "exclude": [
         "node_modules",
         "dist",
-        "examples"
+        "examples",
+        "src/angular/**/*",
+        "src/jquery/**/*",
+        "src/vue/**/*"
     ]
 }

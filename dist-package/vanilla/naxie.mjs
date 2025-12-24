@@ -1,0 +1,2018 @@
+var Me = Object.defineProperty;
+var $e = (n, e, t) => e in n ? Me(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t;
+var g = (n, e, t) => $e(n, typeof e != "symbol" ? e + "" : e, t);
+class Ce {
+  constructor(e = {}) {
+    g(this, "state");
+    g(this, "listeners", /* @__PURE__ */ new Set());
+    this.state = {
+      chatHistory: [],
+      isOpen: !1,
+      isMaximized: !1,
+      isConnected: !1,
+      isLoading: !1,
+      selectedModel: "gpt-4",
+      settings: {
+        tags: [],
+        sensitivity: 70,
+        prompt: ""
+      },
+      ...e
+    };
+  }
+  /**
+   * Get current state (immutable copy)
+   */
+  getState() {
+    return { ...this.state };
+  }
+  /**
+   * Update state and notify listeners
+   */
+  setState(e) {
+    this.state = {
+      ...this.state,
+      ...e
+    }, this.notifyListeners();
+  }
+  /**
+   * Subscribe to state changes
+   */
+  subscribe(e) {
+    return this.listeners.add(e), () => {
+      this.listeners.delete(e);
+    };
+  }
+  /**
+   * Notify all listeners of state changes
+   */
+  notifyListeners() {
+    const e = this.getState();
+    this.listeners.forEach((t) => t(e));
+  }
+  /**
+   * Add a message to chat history
+   */
+  addMessage(e) {
+    this.setState({
+      chatHistory: [...this.state.chatHistory, e]
+    });
+  }
+  /**
+   * Update a message in chat history
+   */
+  updateMessage(e, t) {
+    const s = [...this.state.chatHistory];
+    s[e] = t, this.setState({ chatHistory: s });
+  }
+  /**
+   * Clear chat history
+   */
+  clearHistory() {
+    this.setState({ chatHistory: [] });
+  }
+  /**
+   * Toggle chat visibility
+   */
+  toggleOpen() {
+    this.setState({ isOpen: !this.state.isOpen });
+  }
+  /**
+   * Toggle maximized state
+   */
+  toggleMaximized() {
+    this.setState({ isMaximized: !this.state.isMaximized });
+  }
+  /**
+   * Clean up
+   */
+  destroy() {
+    this.listeners.clear();
+  }
+}
+class Te {
+  constructor() {
+    g(this, "events", /* @__PURE__ */ new Map());
+  }
+  /**
+   * Register an event listener
+   */
+  on(e, t) {
+    return this.events.has(e) || this.events.set(e, /* @__PURE__ */ new Set()), this.events.get(e).add(t), () => this.off(e, t);
+  }
+  /**
+   * Remove an event listener
+   */
+  off(e, t) {
+    const s = this.events.get(e);
+    s && s.delete(t);
+  }
+  /**
+   * Emit an event to all listeners
+   */
+  emit(e, ...t) {
+    const s = this.events.get(e);
+    s && s.forEach((i) => {
+      try {
+        i(...t);
+      } catch (r) {
+        console.error(`Error in event listener for "${e}":`, r);
+      }
+    });
+  }
+  /**
+   * Remove all listeners for an event
+   */
+  removeAllListeners(e) {
+    e ? this.events.delete(e) : this.events.clear();
+  }
+  /**
+   * Get all event names
+   */
+  eventNames() {
+    return Array.from(this.events.keys());
+  }
+  /**
+   * Get listener count for an event
+   */
+  listenerCount(e) {
+    var t;
+    return ((t = this.events.get(e)) == null ? void 0 : t.size) || 0;
+  }
+}
+const S = {
+  MESSAGE_SENT: "message:sent",
+  MESSAGE_RECEIVED: "message:received",
+  CONNECTION_OPENED: "connection:opened",
+  CONNECTION_CLOSED: "connection:closed",
+  CONNECTION_ERROR: "connection:error",
+  STATE_CHANGED: "state:changed",
+  CHAT_OPENED: "chat:opened",
+  CHAT_CLOSED: "chat:closed"
+};
+let v = null;
+const N = [], P = [], Re = (n) => ({
+  connect: () => Le(n),
+  disconnect: Ae,
+  send: ze,
+  addMessageHandler: Oe,
+  removeMessageHandler: _e,
+  addCloseHandler: Ne,
+  removeCloseHandler: Pe,
+  isOpen: Be,
+  getInstance: Ie
+}), Le = (n) => {
+  const e = n.baseUrl || "", t = e ? `${e}/${n.endpoint}` : n.endpoint;
+  if (v) {
+    console.warn("WebSocket is already connected.");
+    return;
+  }
+  v = new WebSocket(t), v.addEventListener("open", () => {
+    var s;
+    console.log("Connected to the WebSocket server"), (s = n.onConnect) == null || s.call(n);
+  }), v.addEventListener("message", (s) => {
+    const i = s == null ? void 0 : s.data;
+    N.forEach((r) => r(i));
+  }), v.addEventListener("close", () => {
+    var s;
+    console.log("WebSocket connection closed"), (s = n.onDisconnect) == null || s.call(n), P.forEach((i) => i()), v = null;
+  }), v.addEventListener("error", (s) => {
+    var i;
+    console.error("WebSocket error:", s), (i = n.onError) == null || i.call(n, s);
+  });
+}, Ae = () => {
+  v && (v.close(), console.log("WebSocket disconnected"));
+}, ze = (n) => {
+  v && v.readyState === WebSocket.OPEN ? v.send(JSON.stringify(n)) : console.warn("WebSocket is not open. Cannot send message.");
+}, Ie = () => v, Oe = (n) => {
+  N.includes(n) || N.push(n);
+}, _e = (n) => {
+  const e = N.indexOf(n);
+  e !== -1 && N.splice(e, 1);
+}, Ne = (n) => {
+  P.includes(n) || P.push(n);
+}, Pe = (n) => {
+  const e = P.indexOf(n);
+  e !== -1 && P.splice(e, 1);
+}, Be = () => v && v.readyState === WebSocket.OPEN;
+class qe {
+  constructor(e) {
+    g(this, "stateManager");
+    g(this, "eventEmitter");
+    g(this, "wsService", null);
+    g(this, "config");
+    var t;
+    !e.apiConfig.baseUrl && ((t = e.websocketConfig) != null && t.baseUrl) && (e.apiConfig.baseUrl = e.websocketConfig.baseUrl.replace(/^wss:\/\//i, "https://").replace(/^ws:\/\//i, "http://")), this.config = e, this.stateManager = new Ce({
+      isOpen: e.defaultOpen || !1
+    }), this.eventEmitter = new Te(), e.websocketConfig && this.initializeWebSocket(e.websocketConfig), this.stateManager.subscribe((s) => {
+      this.eventEmitter.emit(S.STATE_CHANGED, s);
+    });
+  }
+  /**
+   * Initialize WebSocket connection
+   */
+  initializeWebSocket(e) {
+    const t = {
+      ...e,
+      onConnect: () => {
+        var s;
+        this.stateManager.setState({ isConnected: !0 }), this.eventEmitter.emit(S.CONNECTION_OPENED), (s = e.onConnect) == null || s.call(e);
+      },
+      onDisconnect: () => {
+        var s;
+        this.stateManager.setState({ isConnected: !1 }), this.eventEmitter.emit(S.CONNECTION_CLOSED), (s = e.onDisconnect) == null || s.call(e);
+      },
+      onError: (s) => {
+        var i;
+        this.eventEmitter.emit(S.CONNECTION_ERROR, s), (i = e.onError) == null || i.call(e, s);
+      }
+    };
+    this.wsService = Re(t), this.wsService.addMessageHandler((s) => {
+      this.handleIncomingMessage(s);
+    });
+  }
+  /**
+   * Connect to WebSocket
+   */
+  connect() {
+    this.wsService && this.wsService.connect();
+  }
+  /**
+   * Disconnect from WebSocket
+   */
+  disconnect() {
+    this.wsService && this.wsService.disconnect();
+  }
+  /**
+   * Send a message
+   */
+  sendMessage(e, t) {
+    const s = {
+      role: "user",
+      content: e,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    if (this.stateManager.addMessage(s), this.eventEmitter.emit(S.MESSAGE_SENT, s), this.wsService && this.wsService.isOpen()) {
+      const i = this.stateManager.getState(), r = {
+        user_query: e,
+        session_id: i.sessionId,
+        ...this.config.customData,
+        ...t
+      };
+      this.wsService.send(r), this.stateManager.setState({ isLoading: !0 });
+    }
+  }
+  /**
+   * Regenerate the last AI response
+   */
+  regenerate() {
+    const e = this.stateManager.getState(), t = e.chatHistory;
+    let s = -1;
+    for (let o = t.length - 1; o >= 0; o--)
+      if (t[o].role === "user") {
+        s = o;
+        break;
+      }
+    if (s === -1) return;
+    const i = t.slice(0, s + 1);
+    this.stateManager.setState({ chatHistory: i });
+    const r = i[s];
+    if (this.wsService && this.wsService.isOpen()) {
+      const o = {
+        user_query: r.content,
+        session_id: e.sessionId,
+        ...this.config.customData
+      };
+      this.wsService.send(o), this.stateManager.setState({ isLoading: !0 });
+    }
+  }
+  /**
+   * Handle incoming WebSocket message
+   */
+  handleIncomingMessage(e) {
+    let t = null;
+    try {
+      if (typeof e == "string") {
+        const s = e.trim();
+        if (s.toLowerCase() === "ping" || s.toLowerCase() === "pong")
+          return;
+        if (s === "EOF") {
+          this.stateManager.setState({ isLoading: !1 });
+          return;
+        }
+        try {
+          if (t = JSON.parse(e), t && t.session_id && !this.stateManager.getState().sessionId) {
+            this.stateManager.setState({ sessionId: t.session_id });
+            return;
+          }
+        } catch {
+          this.handleTextChunk(e);
+          return;
+        }
+      } else
+        t = e;
+      if (!t) return;
+      if (t.type === "answer" || t.content || t.answer) {
+        const s = {
+          role: "assistant",
+          content: t.content || t.answer || "",
+          timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+          ...t
+        };
+        this.stateManager.addMessage(s), this.eventEmitter.emit(S.MESSAGE_RECEIVED, s), this.stateManager.setState({ isLoading: !1 });
+      }
+    } catch (s) {
+      console.error("Error handling message:", s), this.stateManager.setState({ isLoading: !1 });
+    }
+  }
+  /**
+   * Handle raw text chunks (streaming response)
+   */
+  handleTextChunk(e) {
+    const s = this.stateManager.getState().chatHistory, i = s.length > 0 ? s[s.length - 1] : null;
+    if (i && i.role === "assistant") {
+      const r = {
+        ...i,
+        content: i.content + e
+      };
+      this.stateManager.updateMessage(s.length - 1, r), this.eventEmitter.emit(S.MESSAGE_RECEIVED, r);
+    } else {
+      const r = {
+        role: "assistant",
+        content: e,
+        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      };
+      this.stateManager.addMessage(r), this.eventEmitter.emit(S.MESSAGE_RECEIVED, r);
+    }
+  }
+  /**
+   * Get current state
+   */
+  getState() {
+    return this.stateManager.getState();
+  }
+  /**
+   * Subscribe to state changes
+   */
+  onStateChange(e) {
+    return this.stateManager.subscribe(e);
+  }
+  /**
+   * Subscribe to events
+   */
+  on(e, t) {
+    return this.eventEmitter.on(e, t);
+  }
+  /**
+   * Unsubscribe from events
+   */
+  off(e, t) {
+    this.eventEmitter.off(e, t);
+  }
+  /**
+   * Toggle chat open/closed
+   */
+  toggleOpen() {
+    const e = !this.stateManager.getState().isOpen;
+    this.stateManager.toggleOpen(), this.eventEmitter.emit(
+      e ? S.CHAT_OPENED : S.CHAT_CLOSED
+    );
+  }
+  /**
+   * Toggle maximized state
+   */
+  toggleMaximized() {
+    this.stateManager.toggleMaximized();
+  }
+  /**
+   * Set the selected model
+   */
+  setSelectedModel(e) {
+    this.stateManager.setState({ selectedModel: e });
+  }
+  /**
+   * Update chat settings
+   */
+  updateSettings(e) {
+    const t = this.stateManager.getState().settings;
+    this.stateManager.setState({
+      settings: { ...t, ...e }
+    });
+  }
+  /**
+   * Clear chat history
+   */
+  clearHistory() {
+    this.stateManager.clearHistory();
+  }
+  /**
+   * Fetch available models from API
+   */
+  async fetchModels() {
+    if (!this.config.apiConfig.apiKey) return [];
+    try {
+      const e = await fetch(`${this.config.apiConfig.baseUrl || ""}/naxie/naxie-models`, {
+        headers: {
+          Authorization: `Bearer ${this.config.apiConfig.apiKey}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (e.ok)
+        return (await e.json()).models || [];
+    } catch (e) {
+      console.error("Error fetching models:", e);
+    }
+    return [];
+  }
+  /**
+   * Fetch settings options (domains, tags, prompts)
+   */
+  async fetchSettingsOptions() {
+    const e = { domains: [], tags: [], prompts: [] };
+    if (!this.config.apiConfig.apiKey) return e;
+    const t = {
+      Authorization: `Bearer ${this.config.apiConfig.apiKey}`,
+      "Content-Type": "application/json"
+    };
+    try {
+      const [s, i, r] = await Promise.all([
+        fetch(`${this.config.apiConfig.baseUrl || ""}/domain`, { headers: t }),
+        fetch(`${this.config.apiConfig.baseUrl || ""}/tag`, { headers: t }),
+        fetch(`${this.config.apiConfig.baseUrl || ""}/prompts`, { headers: t })
+      ]);
+      console.log("respoooooo#####", s, i, r), s.ok && (e.domains = (await s.json()).domains || []), i.ok && (e.tags = (await i.json()).tags || []), r.ok && (e.prompts = (await r.json()).prompts || []);
+    } catch (s) {
+      console.error("Error fetching settings options:", s);
+    }
+    return e;
+  }
+  /**
+   * Handle file upload
+   */
+  async uploadFiles(e) {
+    if (!this.config.apiConfig.apiKey) throw new Error("API Key missing");
+    const t = new FormData();
+    e.forEach((i) => t.append("documents", i));
+    const s = await fetch(`${this.config.apiConfig.baseUrl || ""}/document/instant_upload`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${this.config.apiConfig.apiKey}`
+      },
+      body: t
+    });
+    if (!s.ok)
+      throw new Error(`Upload failed: ${s.statusText}`);
+  }
+  /**
+   * Clean up resources
+   */
+  destroy() {
+    this.disconnect(), this.stateManager.destroy(), this.eventEmitter.removeAllListeners();
+  }
+}
+function X() {
+  return { async: !1, breaks: !1, extensions: null, gfm: !0, hooks: null, pedantic: !1, renderer: null, silent: !1, tokenizer: null, walkTokens: null };
+}
+var L = X();
+function ue(n) {
+  L = n;
+}
+var _ = { exec: () => null };
+function k(n, e = "") {
+  let t = typeof n == "string" ? n : n.source, s = { replace: (i, r) => {
+    let o = typeof r == "string" ? r : r.source;
+    return o = o.replace(y.caret, "$1"), t = t.replace(i, o), s;
+  }, getRegex: () => new RegExp(t, e) };
+  return s;
+}
+var He = (() => {
+  try {
+    return !!new RegExp("(?<=1)(?<!1)");
+  } catch {
+    return !1;
+  }
+})(), y = { codeRemoveIndent: /^(?: {1,4}| {0,3}\t)/gm, outputLinkReplace: /\\([\[\]])/g, indentCodeCompensation: /^(\s+)(?:```)/, beginningSpace: /^\s+/, endingHash: /#$/, startingSpaceChar: /^ /, endingSpaceChar: / $/, nonSpaceChar: /[^ ]/, newLineCharGlobal: /\n/g, tabCharGlobal: /\t/g, multipleSpaceGlobal: /\s+/g, blankLine: /^[ \t]*$/, doubleBlankLine: /\n[ \t]*\n[ \t]*$/, blockquoteStart: /^ {0,3}>/, blockquoteSetextReplace: /\n {0,3}((?:=+|-+) *)(?=\n|$)/g, blockquoteSetextReplace2: /^ {0,3}>[ \t]?/gm, listReplaceTabs: /^\t+/, listReplaceNesting: /^ {1,4}(?=( {4})*[^ ])/g, listIsTask: /^\[[ xX]\] +\S/, listReplaceTask: /^\[[ xX]\] +/, listTaskCheckbox: /\[[ xX]\]/, anyLine: /\n.*\n/, hrefBrackets: /^<(.*)>$/, tableDelimiter: /[:|]/, tableAlignChars: /^\||\| *$/g, tableRowBlankLine: /\n[ \t]*$/, tableAlignRight: /^ *-+: *$/, tableAlignCenter: /^ *:-+: *$/, tableAlignLeft: /^ *:-+ *$/, startATag: /^<a /i, endATag: /^<\/a>/i, startPreScriptTag: /^<(pre|code|kbd|script)(\s|>)/i, endPreScriptTag: /^<\/(pre|code|kbd|script)(\s|>)/i, startAngleBracket: /^</, endAngleBracket: />$/, pedanticHrefTitle: /^([^'"]*[^\s])\s+(['"])(.*)\2/, unicodeAlphaNumeric: /[\p{L}\p{N}]/u, escapeTest: /[&<>"']/, escapeReplace: /[&<>"']/g, escapeTestNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/, escapeReplaceNoEncode: /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/g, unescapeTest: /&(#(?:\d+)|(?:#x[0-9A-Fa-f]+)|(?:\w+));?/ig, caret: /(^|[^\[])\^/g, percentDecode: /%25/g, findPipe: /\|/g, splitPipe: / \|/, slashPipe: /\\\|/g, carriageReturn: /\r\n|\r/g, spaceLine: /^ +$/gm, notSpaceStart: /^\S*/, endingNewline: /\n$/, listItemRegex: (n) => new RegExp(`^( {0,3}${n})((?:[	 ][^\\n]*)?(?:\\n|$))`), nextBulletRegex: (n) => new RegExp(`^ {0,${Math.min(3, n - 1)}}(?:[*+-]|\\d{1,9}[.)])((?:[ 	][^\\n]*)?(?:\\n|$))`), hrRegex: (n) => new RegExp(`^ {0,${Math.min(3, n - 1)}}((?:- *){3,}|(?:_ *){3,}|(?:\\* *){3,})(?:\\n+|$)`), fencesBeginRegex: (n) => new RegExp(`^ {0,${Math.min(3, n - 1)}}(?:\`\`\`|~~~)`), headingBeginRegex: (n) => new RegExp(`^ {0,${Math.min(3, n - 1)}}#`), htmlBeginRegex: (n) => new RegExp(`^ {0,${Math.min(3, n - 1)}}<(?:[a-z].*>|!--)`, "i") }, De = /^(?:[ \t]*(?:\n|$))+/, We = /^((?: {4}| {0,3}\t)[^\n]+(?:\n(?:[ \t]*(?:\n|$))*)?)+/, Ue = /^ {0,3}(`{3,}(?=[^`\n]*(?:\n|$))|~{3,})([^\n]*)(?:\n|$)(?:|([\s\S]*?)(?:\n|$))(?: {0,3}\1[~`]* *(?=\n|$)|$)/, B = /^ {0,3}((?:-[\t ]*){3,}|(?:_[ \t]*){3,}|(?:\*[ \t]*){3,})(?:\n+|$)/, Ze = /^ {0,3}(#{1,6})(?=\s|$)(.*)(?:\n+|$)/, K = /(?:[*+-]|\d{1,9}[.)])/, ge = /^(?!bull |blockCode|fences|blockquote|heading|html|table)((?:.|\n(?!\s*?\n|bull |blockCode|fences|blockquote|heading|html|table))+?)\n {0,3}(=+|-+) *(?:\n+|$)/, xe = k(ge).replace(/bull/g, K).replace(/blockCode/g, /(?: {4}| {0,3}\t)/).replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g, / {0,3}>/).replace(/heading/g, / {0,3}#{1,6}/).replace(/html/g, / {0,3}<[^\n>]+>\n/).replace(/\|table/g, "").getRegex(), Ge = k(ge).replace(/bull/g, K).replace(/blockCode/g, /(?: {4}| {0,3}\t)/).replace(/fences/g, / {0,3}(?:`{3,}|~{3,})/).replace(/blockquote/g, / {0,3}>/).replace(/heading/g, / {0,3}#{1,6}/).replace(/html/g, / {0,3}<[^\n>]+>\n/).replace(/table/g, / {0,3}\|?(?:[:\- ]*\|)+[\:\- ]*\n/).getRegex(), J = /^([^\n]+(?:\n(?!hr|heading|lheading|blockquote|fences|list|html|table| +\n)[^\n]+)*)/, je = /^[^\n]+/, Y = /(?!\s*\])(?:\\[\s\S]|[^\[\]\\])+/, Qe = k(/^ {0,3}\[(label)\]: *(?:\n[ \t]*)?([^<\s][^\s]*|<.*?>)(?:(?: +(?:\n[ \t]*)?| *\n[ \t]*)(title))? *(?:\n+|$)/).replace("label", Y).replace("title", /(?:"(?:\\"?|[^"\\])*"|'[^'\n]*(?:\n[^'\n]+)*\n?'|\([^()]*\))/).getRegex(), Fe = k(/^( {0,3}bull)([ \t][^\n]+?)?(?:\n|$)/).replace(/bull/g, K).getRegex(), Z = "address|article|aside|base|basefont|blockquote|body|caption|center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|footer|form|frame|frameset|h[1-6]|head|header|hr|html|iframe|legend|li|link|main|menu|menuitem|meta|nav|noframes|ol|optgroup|option|p|param|search|section|summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul", ee = /<!--(?:-?>|[\s\S]*?(?:-->|$))/, Ve = k("^ {0,3}(?:<(script|pre|style|textarea)[\\s>][\\s\\S]*?(?:</\\1>[^\\n]*\\n+|$)|comment[^\\n]*(\\n+|$)|<\\?[\\s\\S]*?(?:\\?>\\n*|$)|<![A-Z][\\s\\S]*?(?:>\\n*|$)|<!\\[CDATA\\[[\\s\\S]*?(?:\\]\\]>\\n*|$)|</?(tag)(?: +|\\n|/?>)[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$)|<(?!script|pre|style|textarea)([a-z][\\w-]*)(?:attribute)*? */?>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$)|</(?!script|pre|style|textarea)[a-z][\\w-]*\\s*>(?=[ \\t]*(?:\\n|$))[\\s\\S]*?(?:(?:\\n[ 	]*)+\\n|$))", "i").replace("comment", ee).replace("tag", Z).replace("attribute", / +[a-zA-Z:_][\w.:-]*(?: *= *"[^"\n]*"| *= *'[^'\n]*'| *= *[^\s"'=<>`]+)?/).getRegex(), fe = k(J).replace("hr", B).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("|table", "").replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", Z).getRegex(), Xe = k(/^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/).replace("paragraph", fe).getRegex(), te = { blockquote: Xe, code: We, def: Qe, fences: Ue, heading: Ze, hr: B, html: Ve, lheading: xe, list: Fe, newline: De, paragraph: fe, table: _, text: je }, le = k("^ *([^\\n ].*)\\n {0,3}((?:\\| *)?:?-+:? *(?:\\| *:?-+:? *)*(?:\\| *)?)(?:\\n((?:(?! *\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)").replace("hr", B).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("blockquote", " {0,3}>").replace("code", "(?: {4}| {0,3}	)[^\\n]").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", Z).getRegex(), Ke = { ...te, lheading: Ge, table: le, paragraph: k(J).replace("hr", B).replace("heading", " {0,3}#{1,6}(?:\\s|$)").replace("|lheading", "").replace("table", le).replace("blockquote", " {0,3}>").replace("fences", " {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n").replace("list", " {0,3}(?:[*+-]|1[.)]) ").replace("html", "</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|textarea|!--)").replace("tag", Z).getRegex() }, Je = { ...te, html: k(`^ *(?:comment *(?:\\n|\\s*$)|<(tag)[\\s\\S]+?</\\1> *(?:\\n{2,}|\\s*$)|<tag(?:"[^"]*"|'[^']*'|\\s[^'"/>\\s]*)*?/?> *(?:\\n{2,}|\\s*$))`).replace("comment", ee).replace(/tag/g, "(?!(?:a|em|strong|small|s|cite|q|dfn|abbr|data|time|code|var|samp|kbd|sub|sup|i|b|u|mark|ruby|rt|rp|bdi|bdo|span|br|wbr|ins|del|img)\\b)\\w+(?!:|[^\\w\\s@]*@)\\b").getRegex(), def: /^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +(["(][^\n]+[")]))? *(?:\n+|$)/, heading: /^(#{1,6})(.*)(?:\n+|$)/, fences: _, lheading: /^(.+?)\n {0,3}(=+|-+) *(?:\n+|$)/, paragraph: k(J).replace("hr", B).replace("heading", ` *#{1,6} *[^
+]`).replace("lheading", xe).replace("|table", "").replace("blockquote", " {0,3}>").replace("|fences", "").replace("|list", "").replace("|html", "").replace("|tag", "").getRegex() }, Ye = /^\\([!"#$%&'()*+,\-./:;<=>?@\[\]\\^_`{|}~])/, et = /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/, ke = /^( {2,}|\\)\n(?!\s*$)/, tt = /^(`+|[^`])(?:(?= {2,}\n)|[\s\S]*?(?:(?=[\\<!\[`*_]|\b_|$)|[^ ](?= {2,}\n)))/, G = /[\p{P}\p{S}]/u, se = /[\s\p{P}\p{S}]/u, me = /[^\s\p{P}\p{S}]/u, st = k(/^((?![*_])punctSpace)/, "u").replace(/punctSpace/g, se).getRegex(), be = /(?!~)[\p{P}\p{S}]/u, nt = /(?!~)[\s\p{P}\p{S}]/u, it = /(?:[^\s\p{P}\p{S}]|~)/u, rt = k(/link|precode-code|html/, "g").replace("link", /\[(?:[^\[\]`]|(?<a>`+)[^`]+\k<a>(?!`))*?\]\((?:\\[\s\S]|[^\\\(\)]|\((?:\\[\s\S]|[^\\\(\)])*\))*\)/).replace("precode-", He ? "(?<!`)()" : "(^^|[^`])").replace("code", /(?<b>`+)[^`]+\k<b>(?!`)/).replace("html", /<(?! )[^<>]*?>/).getRegex(), we = /^(?:\*+(?:((?!\*)punct)|[^\s*]))|^_+(?:((?!_)punct)|([^\s_]))/, at = k(we, "u").replace(/punct/g, G).getRegex(), lt = k(we, "u").replace(/punct/g, be).getRegex(), ve = "^[^_*]*?__[^_*]*?\\*[^_*]*?(?=__)|[^*]+(?=[^*])|(?!\\*)punct(\\*+)(?=[\\s]|$)|notPunctSpace(\\*+)(?!\\*)(?=punctSpace|$)|(?!\\*)punctSpace(\\*+)(?=notPunctSpace)|[\\s](\\*+)(?!\\*)(?=punct)|(?!\\*)punct(\\*+)(?!\\*)(?=punct)|notPunctSpace(\\*+)(?=notPunctSpace)", ot = k(ve, "gu").replace(/notPunctSpace/g, me).replace(/punctSpace/g, se).replace(/punct/g, G).getRegex(), ct = k(ve, "gu").replace(/notPunctSpace/g, it).replace(/punctSpace/g, nt).replace(/punct/g, be).getRegex(), ht = k("^[^_*]*?\\*\\*[^_*]*?_[^_*]*?(?=\\*\\*)|[^_]+(?=[^_])|(?!_)punct(_+)(?=[\\s]|$)|notPunctSpace(_+)(?!_)(?=punctSpace|$)|(?!_)punctSpace(_+)(?=notPunctSpace)|[\\s](_+)(?!_)(?=punct)|(?!_)punct(_+)(?!_)(?=punct)", "gu").replace(/notPunctSpace/g, me).replace(/punctSpace/g, se).replace(/punct/g, G).getRegex(), pt = k(/\\(punct)/, "gu").replace(/punct/g, G).getRegex(), dt = k(/^<(scheme:[^\s\x00-\x1f<>]*|email)>/).replace("scheme", /[a-zA-Z][a-zA-Z0-9+.-]{1,31}/).replace("email", /[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+(@)[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+(?![-_])/).getRegex(), ut = k(ee).replace("(?:-->|$)", "-->").getRegex(), gt = k("^comment|^</[a-zA-Z][\\w:-]*\\s*>|^<[a-zA-Z][\\w-]*(?:attribute)*?\\s*/?>|^<\\?[\\s\\S]*?\\?>|^<![a-zA-Z]+\\s[\\s\\S]*?>|^<!\\[CDATA\\[[\\s\\S]*?\\]\\]>").replace("comment", ut).replace("attribute", /\s+[a-zA-Z:_][\w.:-]*(?:\s*=\s*"[^"]*"|\s*=\s*'[^']*'|\s*=\s*[^\s"'=<>`]+)?/).getRegex(), D = /(?:\[(?:\\[\s\S]|[^\[\]\\])*\]|\\[\s\S]|`+[^`]*?`+(?!`)|[^\[\]\\`])*?/, xt = k(/^!?\[(label)\]\(\s*(href)(?:(?:[ \t]*(?:\n[ \t]*)?)(title))?\s*\)/).replace("label", D).replace("href", /<(?:\\.|[^\n<>\\])+>|[^ \t\n\x00-\x1f]*/).replace("title", /"(?:\\"?|[^"\\])*"|'(?:\\'?|[^'\\])*'|\((?:\\\)?|[^)\\])*\)/).getRegex(), ye = k(/^!?\[(label)\]\[(ref)\]/).replace("label", D).replace("ref", Y).getRegex(), Se = k(/^!?\[(ref)\](?:\[\])?/).replace("ref", Y).getRegex(), ft = k("reflink|nolink(?!\\()", "g").replace("reflink", ye).replace("nolink", Se).getRegex(), oe = /[hH][tT][tT][pP][sS]?|[fF][tT][pP]/, ne = { _backpedal: _, anyPunctuation: pt, autolink: dt, blockSkip: rt, br: ke, code: et, del: _, emStrongLDelim: at, emStrongRDelimAst: ot, emStrongRDelimUnd: ht, escape: Ye, link: xt, nolink: Se, punctuation: st, reflink: ye, reflinkSearch: ft, tag: gt, text: tt, url: _ }, kt = { ...ne, link: k(/^!?\[(label)\]\((.*?)\)/).replace("label", D).getRegex(), reflink: k(/^!?\[(label)\]\s*\[([^\]]*)\]/).replace("label", D).getRegex() }, Q = { ...ne, emStrongRDelimAst: ct, emStrongLDelim: lt, url: k(/^((?:protocol):\/\/|www\.)(?:[a-zA-Z0-9\-]+\.?)+[^\s<]*|^email/).replace("protocol", oe).replace("email", /[A-Za-z0-9._+-]+(@)[a-zA-Z0-9-_]+(?:\.[a-zA-Z0-9-_]*[a-zA-Z0-9])+(?![-_])/).getRegex(), _backpedal: /(?:[^?!.,:;*_'"~()&]+|\([^)]*\)|&(?![a-zA-Z0-9]+;$)|[?!.,:;*_'"~)]+(?!$))+/, del: /^(~~?)(?=[^\s~])((?:\\[\s\S]|[^\\])*?(?:\\[\s\S]|[^\s~\\]))\1(?=[^~]|$)/, text: k(/^([`~]+|[^`~])(?:(?= {2,}\n)|(?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)|[\s\S]*?(?:(?=[\\<!\[`*~_]|\b_|protocol:\/\/|www\.|$)|[^ ](?= {2,}\n)|[^a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-](?=[a-zA-Z0-9.!#$%&'*+\/=?_`{\|}~-]+@)))/).replace("protocol", oe).getRegex() }, mt = { ...Q, br: k(ke).replace("{2,}", "*").getRegex(), text: k(Q.text).replace("\\b_", "\\b_| {2,}\\n").replace(/\{2,\}/g, "*").getRegex() }, q = { normal: te, gfm: Ke, pedantic: Je }, z = { normal: ne, gfm: Q, breaks: mt, pedantic: kt }, bt = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }, ce = (n) => bt[n];
+function T(n, e) {
+  if (e) {
+    if (y.escapeTest.test(n)) return n.replace(y.escapeReplace, ce);
+  } else if (y.escapeTestNoEncode.test(n)) return n.replace(y.escapeReplaceNoEncode, ce);
+  return n;
+}
+function he(n) {
+  try {
+    n = encodeURI(n).replace(y.percentDecode, "%");
+  } catch {
+    return null;
+  }
+  return n;
+}
+function pe(n, e) {
+  var r;
+  let t = n.replace(y.findPipe, (o, a, h) => {
+    let l = !1, p = a;
+    for (; --p >= 0 && h[p] === "\\"; ) l = !l;
+    return l ? "|" : " |";
+  }), s = t.split(y.splitPipe), i = 0;
+  if (s[0].trim() || s.shift(), s.length > 0 && !((r = s.at(-1)) != null && r.trim()) && s.pop(), e) if (s.length > e) s.splice(e);
+  else for (; s.length < e; ) s.push("");
+  for (; i < s.length; i++) s[i] = s[i].trim().replace(y.slashPipe, "|");
+  return s;
+}
+function I(n, e, t) {
+  let s = n.length;
+  if (s === 0) return "";
+  let i = 0;
+  for (; i < s && n.charAt(s - i - 1) === e; )
+    i++;
+  return n.slice(0, s - i);
+}
+function wt(n, e) {
+  if (n.indexOf(e[1]) === -1) return -1;
+  let t = 0;
+  for (let s = 0; s < n.length; s++) if (n[s] === "\\") s++;
+  else if (n[s] === e[0]) t++;
+  else if (n[s] === e[1] && (t--, t < 0)) return s;
+  return t > 0 ? -2 : -1;
+}
+function de(n, e, t, s, i) {
+  let r = e.href, o = e.title || null, a = n[1].replace(i.other.outputLinkReplace, "$1");
+  s.state.inLink = !0;
+  let h = { type: n[0].charAt(0) === "!" ? "image" : "link", raw: t, href: r, title: o, text: a, tokens: s.inlineTokens(a) };
+  return s.state.inLink = !1, h;
+}
+function vt(n, e, t) {
+  let s = n.match(t.other.indentCodeCompensation);
+  if (s === null) return e;
+  let i = s[1];
+  return e.split(`
+`).map((r) => {
+    let o = r.match(t.other.beginningSpace);
+    if (o === null) return r;
+    let [a] = o;
+    return a.length >= i.length ? r.slice(i.length) : r;
+  }).join(`
+`);
+}
+var W = class {
+  constructor(n) {
+    g(this, "options");
+    g(this, "rules");
+    g(this, "lexer");
+    this.options = n || L;
+  }
+  space(n) {
+    let e = this.rules.block.newline.exec(n);
+    if (e && e[0].length > 0) return { type: "space", raw: e[0] };
+  }
+  code(n) {
+    let e = this.rules.block.code.exec(n);
+    if (e) {
+      let t = e[0].replace(this.rules.other.codeRemoveIndent, "");
+      return { type: "code", raw: e[0], codeBlockStyle: "indented", text: this.options.pedantic ? t : I(t, `
+`) };
+    }
+  }
+  fences(n) {
+    let e = this.rules.block.fences.exec(n);
+    if (e) {
+      let t = e[0], s = vt(t, e[3] || "", this.rules);
+      return { type: "code", raw: t, lang: e[2] ? e[2].trim().replace(this.rules.inline.anyPunctuation, "$1") : e[2], text: s };
+    }
+  }
+  heading(n) {
+    let e = this.rules.block.heading.exec(n);
+    if (e) {
+      let t = e[2].trim();
+      if (this.rules.other.endingHash.test(t)) {
+        let s = I(t, "#");
+        (this.options.pedantic || !s || this.rules.other.endingSpaceChar.test(s)) && (t = s.trim());
+      }
+      return { type: "heading", raw: e[0], depth: e[1].length, text: t, tokens: this.lexer.inline(t) };
+    }
+  }
+  hr(n) {
+    let e = this.rules.block.hr.exec(n);
+    if (e) return { type: "hr", raw: I(e[0], `
+`) };
+  }
+  blockquote(n) {
+    let e = this.rules.block.blockquote.exec(n);
+    if (e) {
+      let t = I(e[0], `
+`).split(`
+`), s = "", i = "", r = [];
+      for (; t.length > 0; ) {
+        let o = !1, a = [], h;
+        for (h = 0; h < t.length; h++) if (this.rules.other.blockquoteStart.test(t[h])) a.push(t[h]), o = !0;
+        else if (!o) a.push(t[h]);
+        else break;
+        t = t.slice(h);
+        let l = a.join(`
+`), p = l.replace(this.rules.other.blockquoteSetextReplace, `
+    $1`).replace(this.rules.other.blockquoteSetextReplace2, "");
+        s = s ? `${s}
+${l}` : l, i = i ? `${i}
+${p}` : p;
+        let u = this.lexer.state.top;
+        if (this.lexer.state.top = !0, this.lexer.blockTokens(p, r, !0), this.lexer.state.top = u, t.length === 0) break;
+        let d = r.at(-1);
+        if ((d == null ? void 0 : d.type) === "code") break;
+        if ((d == null ? void 0 : d.type) === "blockquote") {
+          let c = d, x = c.raw + `
+` + t.join(`
+`), f = this.blockquote(x);
+          r[r.length - 1] = f, s = s.substring(0, s.length - c.raw.length) + f.raw, i = i.substring(0, i.length - c.text.length) + f.text;
+          break;
+        } else if ((d == null ? void 0 : d.type) === "list") {
+          let c = d, x = c.raw + `
+` + t.join(`
+`), f = this.list(x);
+          r[r.length - 1] = f, s = s.substring(0, s.length - d.raw.length) + f.raw, i = i.substring(0, i.length - c.raw.length) + f.raw, t = x.substring(r.at(-1).raw.length).split(`
+`);
+          continue;
+        }
+      }
+      return { type: "blockquote", raw: s, tokens: r, text: i };
+    }
+  }
+  list(n) {
+    var t, s;
+    let e = this.rules.block.list.exec(n);
+    if (e) {
+      let i = e[1].trim(), r = i.length > 1, o = { type: "list", raw: "", ordered: r, start: r ? +i.slice(0, -1) : "", loose: !1, items: [] };
+      i = r ? `\\d{1,9}\\${i.slice(-1)}` : `\\${i}`, this.options.pedantic && (i = r ? i : "[*+-]");
+      let a = this.rules.other.listItemRegex(i), h = !1;
+      for (; n; ) {
+        let p = !1, u = "", d = "";
+        if (!(e = a.exec(n)) || this.rules.block.hr.test(n)) break;
+        u = e[0], n = n.substring(u.length);
+        let c = e[2].split(`
+`, 1)[0].replace(this.rules.other.listReplaceTabs, ($) => " ".repeat(3 * $.length)), x = n.split(`
+`, 1)[0], f = !c.trim(), w = 0;
+        if (this.options.pedantic ? (w = 2, d = c.trimStart()) : f ? w = e[1].length + 1 : (w = e[2].search(this.rules.other.nonSpaceChar), w = w > 4 ? 1 : w, d = c.slice(w), w += e[1].length), f && this.rules.other.blankLine.test(x) && (u += x + `
+`, n = n.substring(x.length + 1), p = !0), !p) {
+          let $ = this.rules.other.nextBulletRegex(w), C = this.rules.other.hrRegex(w), re = this.rules.other.fencesBeginRegex(w), ae = this.rules.other.headingBeginRegex(w), Ee = this.rules.other.htmlBeginRegex(w);
+          for (; n; ) {
+            let j = n.split(`
+`, 1)[0], A;
+            if (x = j, this.options.pedantic ? (x = x.replace(this.rules.other.listReplaceNesting, "  "), A = x) : A = x.replace(this.rules.other.tabCharGlobal, "    "), re.test(x) || ae.test(x) || Ee.test(x) || $.test(x) || C.test(x)) break;
+            if (A.search(this.rules.other.nonSpaceChar) >= w || !x.trim()) d += `
+` + A.slice(w);
+            else {
+              if (f || c.replace(this.rules.other.tabCharGlobal, "    ").search(this.rules.other.nonSpaceChar) >= 4 || re.test(c) || ae.test(c) || C.test(c)) break;
+              d += `
+` + x;
+            }
+            !f && !x.trim() && (f = !0), u += j + `
+`, n = n.substring(j.length + 1), c = A.slice(w);
+          }
+        }
+        o.loose || (h ? o.loose = !0 : this.rules.other.doubleBlankLine.test(u) && (h = !0)), o.items.push({ type: "list_item", raw: u, task: !!this.options.gfm && this.rules.other.listIsTask.test(d), loose: !1, text: d, tokens: [] }), o.raw += u;
+      }
+      let l = o.items.at(-1);
+      if (l) l.raw = l.raw.trimEnd(), l.text = l.text.trimEnd();
+      else return;
+      o.raw = o.raw.trimEnd();
+      for (let p of o.items) {
+        if (this.lexer.state.top = !1, p.tokens = this.lexer.blockTokens(p.text, []), p.task) {
+          if (p.text = p.text.replace(this.rules.other.listReplaceTask, ""), ((t = p.tokens[0]) == null ? void 0 : t.type) === "text" || ((s = p.tokens[0]) == null ? void 0 : s.type) === "paragraph") {
+            p.tokens[0].raw = p.tokens[0].raw.replace(this.rules.other.listReplaceTask, ""), p.tokens[0].text = p.tokens[0].text.replace(this.rules.other.listReplaceTask, "");
+            for (let d = this.lexer.inlineQueue.length - 1; d >= 0; d--) if (this.rules.other.listIsTask.test(this.lexer.inlineQueue[d].src)) {
+              this.lexer.inlineQueue[d].src = this.lexer.inlineQueue[d].src.replace(this.rules.other.listReplaceTask, "");
+              break;
+            }
+          }
+          let u = this.rules.other.listTaskCheckbox.exec(p.raw);
+          if (u) {
+            let d = { type: "checkbox", raw: u[0] + " ", checked: u[0] !== "[ ]" };
+            p.checked = d.checked, o.loose ? p.tokens[0] && ["paragraph", "text"].includes(p.tokens[0].type) && "tokens" in p.tokens[0] && p.tokens[0].tokens ? (p.tokens[0].raw = d.raw + p.tokens[0].raw, p.tokens[0].text = d.raw + p.tokens[0].text, p.tokens[0].tokens.unshift(d)) : p.tokens.unshift({ type: "paragraph", raw: d.raw, text: d.raw, tokens: [d] }) : p.tokens.unshift(d);
+          }
+        }
+        if (!o.loose) {
+          let u = p.tokens.filter((c) => c.type === "space"), d = u.length > 0 && u.some((c) => this.rules.other.anyLine.test(c.raw));
+          o.loose = d;
+        }
+      }
+      if (o.loose) for (let p of o.items) {
+        p.loose = !0;
+        for (let u of p.tokens) u.type === "text" && (u.type = "paragraph");
+      }
+      return o;
+    }
+  }
+  html(n) {
+    let e = this.rules.block.html.exec(n);
+    if (e) return { type: "html", block: !0, raw: e[0], pre: e[1] === "pre" || e[1] === "script" || e[1] === "style", text: e[0] };
+  }
+  def(n) {
+    let e = this.rules.block.def.exec(n);
+    if (e) {
+      let t = e[1].toLowerCase().replace(this.rules.other.multipleSpaceGlobal, " "), s = e[2] ? e[2].replace(this.rules.other.hrefBrackets, "$1").replace(this.rules.inline.anyPunctuation, "$1") : "", i = e[3] ? e[3].substring(1, e[3].length - 1).replace(this.rules.inline.anyPunctuation, "$1") : e[3];
+      return { type: "def", tag: t, raw: e[0], href: s, title: i };
+    }
+  }
+  table(n) {
+    var o;
+    let e = this.rules.block.table.exec(n);
+    if (!e || !this.rules.other.tableDelimiter.test(e[2])) return;
+    let t = pe(e[1]), s = e[2].replace(this.rules.other.tableAlignChars, "").split("|"), i = (o = e[3]) != null && o.trim() ? e[3].replace(this.rules.other.tableRowBlankLine, "").split(`
+`) : [], r = { type: "table", raw: e[0], header: [], align: [], rows: [] };
+    if (t.length === s.length) {
+      for (let a of s) this.rules.other.tableAlignRight.test(a) ? r.align.push("right") : this.rules.other.tableAlignCenter.test(a) ? r.align.push("center") : this.rules.other.tableAlignLeft.test(a) ? r.align.push("left") : r.align.push(null);
+      for (let a = 0; a < t.length; a++) r.header.push({ text: t[a], tokens: this.lexer.inline(t[a]), header: !0, align: r.align[a] });
+      for (let a of i) r.rows.push(pe(a, r.header.length).map((h, l) => ({ text: h, tokens: this.lexer.inline(h), header: !1, align: r.align[l] })));
+      return r;
+    }
+  }
+  lheading(n) {
+    let e = this.rules.block.lheading.exec(n);
+    if (e) return { type: "heading", raw: e[0], depth: e[2].charAt(0) === "=" ? 1 : 2, text: e[1], tokens: this.lexer.inline(e[1]) };
+  }
+  paragraph(n) {
+    let e = this.rules.block.paragraph.exec(n);
+    if (e) {
+      let t = e[1].charAt(e[1].length - 1) === `
+` ? e[1].slice(0, -1) : e[1];
+      return { type: "paragraph", raw: e[0], text: t, tokens: this.lexer.inline(t) };
+    }
+  }
+  text(n) {
+    let e = this.rules.block.text.exec(n);
+    if (e) return { type: "text", raw: e[0], text: e[0], tokens: this.lexer.inline(e[0]) };
+  }
+  escape(n) {
+    let e = this.rules.inline.escape.exec(n);
+    if (e) return { type: "escape", raw: e[0], text: e[1] };
+  }
+  tag(n) {
+    let e = this.rules.inline.tag.exec(n);
+    if (e) return !this.lexer.state.inLink && this.rules.other.startATag.test(e[0]) ? this.lexer.state.inLink = !0 : this.lexer.state.inLink && this.rules.other.endATag.test(e[0]) && (this.lexer.state.inLink = !1), !this.lexer.state.inRawBlock && this.rules.other.startPreScriptTag.test(e[0]) ? this.lexer.state.inRawBlock = !0 : this.lexer.state.inRawBlock && this.rules.other.endPreScriptTag.test(e[0]) && (this.lexer.state.inRawBlock = !1), { type: "html", raw: e[0], inLink: this.lexer.state.inLink, inRawBlock: this.lexer.state.inRawBlock, block: !1, text: e[0] };
+  }
+  link(n) {
+    let e = this.rules.inline.link.exec(n);
+    if (e) {
+      let t = e[2].trim();
+      if (!this.options.pedantic && this.rules.other.startAngleBracket.test(t)) {
+        if (!this.rules.other.endAngleBracket.test(t)) return;
+        let r = I(t.slice(0, -1), "\\");
+        if ((t.length - r.length) % 2 === 0) return;
+      } else {
+        let r = wt(e[2], "()");
+        if (r === -2) return;
+        if (r > -1) {
+          let o = (e[0].indexOf("!") === 0 ? 5 : 4) + e[1].length + r;
+          e[2] = e[2].substring(0, r), e[0] = e[0].substring(0, o).trim(), e[3] = "";
+        }
+      }
+      let s = e[2], i = "";
+      if (this.options.pedantic) {
+        let r = this.rules.other.pedanticHrefTitle.exec(s);
+        r && (s = r[1], i = r[3]);
+      } else i = e[3] ? e[3].slice(1, -1) : "";
+      return s = s.trim(), this.rules.other.startAngleBracket.test(s) && (this.options.pedantic && !this.rules.other.endAngleBracket.test(t) ? s = s.slice(1) : s = s.slice(1, -1)), de(e, { href: s && s.replace(this.rules.inline.anyPunctuation, "$1"), title: i && i.replace(this.rules.inline.anyPunctuation, "$1") }, e[0], this.lexer, this.rules);
+    }
+  }
+  reflink(n, e) {
+    let t;
+    if ((t = this.rules.inline.reflink.exec(n)) || (t = this.rules.inline.nolink.exec(n))) {
+      let s = (t[2] || t[1]).replace(this.rules.other.multipleSpaceGlobal, " "), i = e[s.toLowerCase()];
+      if (!i) {
+        let r = t[0].charAt(0);
+        return { type: "text", raw: r, text: r };
+      }
+      return de(t, i, t[0], this.lexer, this.rules);
+    }
+  }
+  emStrong(n, e, t = "") {
+    let s = this.rules.inline.emStrongLDelim.exec(n);
+    if (!(!s || s[3] && t.match(this.rules.other.unicodeAlphaNumeric)) && (!(s[1] || s[2]) || !t || this.rules.inline.punctuation.exec(t))) {
+      let i = [...s[0]].length - 1, r, o, a = i, h = 0, l = s[0][0] === "*" ? this.rules.inline.emStrongRDelimAst : this.rules.inline.emStrongRDelimUnd;
+      for (l.lastIndex = 0, e = e.slice(-1 * n.length + i); (s = l.exec(e)) != null; ) {
+        if (r = s[1] || s[2] || s[3] || s[4] || s[5] || s[6], !r) continue;
+        if (o = [...r].length, s[3] || s[4]) {
+          a += o;
+          continue;
+        } else if ((s[5] || s[6]) && i % 3 && !((i + o) % 3)) {
+          h += o;
+          continue;
+        }
+        if (a -= o, a > 0) continue;
+        o = Math.min(o, o + a + h);
+        let p = [...s[0]][0].length, u = n.slice(0, i + s.index + p + o);
+        if (Math.min(i, o) % 2) {
+          let c = u.slice(1, -1);
+          return { type: "em", raw: u, text: c, tokens: this.lexer.inlineTokens(c) };
+        }
+        let d = u.slice(2, -2);
+        return { type: "strong", raw: u, text: d, tokens: this.lexer.inlineTokens(d) };
+      }
+    }
+  }
+  codespan(n) {
+    let e = this.rules.inline.code.exec(n);
+    if (e) {
+      let t = e[2].replace(this.rules.other.newLineCharGlobal, " "), s = this.rules.other.nonSpaceChar.test(t), i = this.rules.other.startingSpaceChar.test(t) && this.rules.other.endingSpaceChar.test(t);
+      return s && i && (t = t.substring(1, t.length - 1)), { type: "codespan", raw: e[0], text: t };
+    }
+  }
+  br(n) {
+    let e = this.rules.inline.br.exec(n);
+    if (e) return { type: "br", raw: e[0] };
+  }
+  del(n) {
+    let e = this.rules.inline.del.exec(n);
+    if (e) return { type: "del", raw: e[0], text: e[2], tokens: this.lexer.inlineTokens(e[2]) };
+  }
+  autolink(n) {
+    let e = this.rules.inline.autolink.exec(n);
+    if (e) {
+      let t, s;
+      return e[2] === "@" ? (t = e[1], s = "mailto:" + t) : (t = e[1], s = t), { type: "link", raw: e[0], text: t, href: s, tokens: [{ type: "text", raw: t, text: t }] };
+    }
+  }
+  url(n) {
+    var t;
+    let e;
+    if (e = this.rules.inline.url.exec(n)) {
+      let s, i;
+      if (e[2] === "@") s = e[0], i = "mailto:" + s;
+      else {
+        let r;
+        do
+          r = e[0], e[0] = ((t = this.rules.inline._backpedal.exec(e[0])) == null ? void 0 : t[0]) ?? "";
+        while (r !== e[0]);
+        s = e[0], e[1] === "www." ? i = "http://" + e[0] : i = e[0];
+      }
+      return { type: "link", raw: e[0], text: s, href: i, tokens: [{ type: "text", raw: s, text: s }] };
+    }
+  }
+  inlineText(n) {
+    let e = this.rules.inline.text.exec(n);
+    if (e) {
+      let t = this.lexer.state.inRawBlock;
+      return { type: "text", raw: e[0], text: e[0], escaped: t };
+    }
+  }
+}, E = class F {
+  constructor(e) {
+    g(this, "tokens");
+    g(this, "options");
+    g(this, "state");
+    g(this, "inlineQueue");
+    g(this, "tokenizer");
+    this.tokens = [], this.tokens.links = /* @__PURE__ */ Object.create(null), this.options = e || L, this.options.tokenizer = this.options.tokenizer || new W(), this.tokenizer = this.options.tokenizer, this.tokenizer.options = this.options, this.tokenizer.lexer = this, this.inlineQueue = [], this.state = { inLink: !1, inRawBlock: !1, top: !0 };
+    let t = { other: y, block: q.normal, inline: z.normal };
+    this.options.pedantic ? (t.block = q.pedantic, t.inline = z.pedantic) : this.options.gfm && (t.block = q.gfm, this.options.breaks ? t.inline = z.breaks : t.inline = z.gfm), this.tokenizer.rules = t;
+  }
+  static get rules() {
+    return { block: q, inline: z };
+  }
+  static lex(e, t) {
+    return new F(t).lex(e);
+  }
+  static lexInline(e, t) {
+    return new F(t).inlineTokens(e);
+  }
+  lex(e) {
+    e = e.replace(y.carriageReturn, `
+`), this.blockTokens(e, this.tokens);
+    for (let t = 0; t < this.inlineQueue.length; t++) {
+      let s = this.inlineQueue[t];
+      this.inlineTokens(s.src, s.tokens);
+    }
+    return this.inlineQueue = [], this.tokens;
+  }
+  blockTokens(e, t = [], s = !1) {
+    var i, r, o;
+    for (this.options.pedantic && (e = e.replace(y.tabCharGlobal, "    ").replace(y.spaceLine, "")); e; ) {
+      let a;
+      if ((r = (i = this.options.extensions) == null ? void 0 : i.block) != null && r.some((l) => (a = l.call({ lexer: this }, e, t)) ? (e = e.substring(a.raw.length), t.push(a), !0) : !1)) continue;
+      if (a = this.tokenizer.space(e)) {
+        e = e.substring(a.raw.length);
+        let l = t.at(-1);
+        a.raw.length === 1 && l !== void 0 ? l.raw += `
+` : t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.code(e)) {
+        e = e.substring(a.raw.length);
+        let l = t.at(-1);
+        (l == null ? void 0 : l.type) === "paragraph" || (l == null ? void 0 : l.type) === "text" ? (l.raw += (l.raw.endsWith(`
+`) ? "" : `
+`) + a.raw, l.text += `
+` + a.text, this.inlineQueue.at(-1).src = l.text) : t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.fences(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.heading(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.hr(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.blockquote(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.list(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.html(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.def(e)) {
+        e = e.substring(a.raw.length);
+        let l = t.at(-1);
+        (l == null ? void 0 : l.type) === "paragraph" || (l == null ? void 0 : l.type) === "text" ? (l.raw += (l.raw.endsWith(`
+`) ? "" : `
+`) + a.raw, l.text += `
+` + a.raw, this.inlineQueue.at(-1).src = l.text) : this.tokens.links[a.tag] || (this.tokens.links[a.tag] = { href: a.href, title: a.title }, t.push(a));
+        continue;
+      }
+      if (a = this.tokenizer.table(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      if (a = this.tokenizer.lheading(e)) {
+        e = e.substring(a.raw.length), t.push(a);
+        continue;
+      }
+      let h = e;
+      if ((o = this.options.extensions) != null && o.startBlock) {
+        let l = 1 / 0, p = e.slice(1), u;
+        this.options.extensions.startBlock.forEach((d) => {
+          u = d.call({ lexer: this }, p), typeof u == "number" && u >= 0 && (l = Math.min(l, u));
+        }), l < 1 / 0 && l >= 0 && (h = e.substring(0, l + 1));
+      }
+      if (this.state.top && (a = this.tokenizer.paragraph(h))) {
+        let l = t.at(-1);
+        s && (l == null ? void 0 : l.type) === "paragraph" ? (l.raw += (l.raw.endsWith(`
+`) ? "" : `
+`) + a.raw, l.text += `
+` + a.text, this.inlineQueue.pop(), this.inlineQueue.at(-1).src = l.text) : t.push(a), s = h.length !== e.length, e = e.substring(a.raw.length);
+        continue;
+      }
+      if (a = this.tokenizer.text(e)) {
+        e = e.substring(a.raw.length);
+        let l = t.at(-1);
+        (l == null ? void 0 : l.type) === "text" ? (l.raw += (l.raw.endsWith(`
+`) ? "" : `
+`) + a.raw, l.text += `
+` + a.text, this.inlineQueue.pop(), this.inlineQueue.at(-1).src = l.text) : t.push(a);
+        continue;
+      }
+      if (e) {
+        let l = "Infinite loop on byte: " + e.charCodeAt(0);
+        if (this.options.silent) {
+          console.error(l);
+          break;
+        } else throw new Error(l);
+      }
+    }
+    return this.state.top = !0, t;
+  }
+  inline(e, t = []) {
+    return this.inlineQueue.push({ src: e, tokens: t }), t;
+  }
+  inlineTokens(e, t = []) {
+    var h, l, p, u, d;
+    let s = e, i = null;
+    if (this.tokens.links) {
+      let c = Object.keys(this.tokens.links);
+      if (c.length > 0) for (; (i = this.tokenizer.rules.inline.reflinkSearch.exec(s)) != null; ) c.includes(i[0].slice(i[0].lastIndexOf("[") + 1, -1)) && (s = s.slice(0, i.index) + "[" + "a".repeat(i[0].length - 2) + "]" + s.slice(this.tokenizer.rules.inline.reflinkSearch.lastIndex));
+    }
+    for (; (i = this.tokenizer.rules.inline.anyPunctuation.exec(s)) != null; ) s = s.slice(0, i.index) + "++" + s.slice(this.tokenizer.rules.inline.anyPunctuation.lastIndex);
+    let r;
+    for (; (i = this.tokenizer.rules.inline.blockSkip.exec(s)) != null; ) r = i[2] ? i[2].length : 0, s = s.slice(0, i.index + r) + "[" + "a".repeat(i[0].length - r - 2) + "]" + s.slice(this.tokenizer.rules.inline.blockSkip.lastIndex);
+    s = ((l = (h = this.options.hooks) == null ? void 0 : h.emStrongMask) == null ? void 0 : l.call({ lexer: this }, s)) ?? s;
+    let o = !1, a = "";
+    for (; e; ) {
+      o || (a = ""), o = !1;
+      let c;
+      if ((u = (p = this.options.extensions) == null ? void 0 : p.inline) != null && u.some((f) => (c = f.call({ lexer: this }, e, t)) ? (e = e.substring(c.raw.length), t.push(c), !0) : !1)) continue;
+      if (c = this.tokenizer.escape(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.tag(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.link(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.reflink(e, this.tokens.links)) {
+        e = e.substring(c.raw.length);
+        let f = t.at(-1);
+        c.type === "text" && (f == null ? void 0 : f.type) === "text" ? (f.raw += c.raw, f.text += c.text) : t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.emStrong(e, s, a)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.codespan(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.br(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.del(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (c = this.tokenizer.autolink(e)) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      if (!this.state.inLink && (c = this.tokenizer.url(e))) {
+        e = e.substring(c.raw.length), t.push(c);
+        continue;
+      }
+      let x = e;
+      if ((d = this.options.extensions) != null && d.startInline) {
+        let f = 1 / 0, w = e.slice(1), $;
+        this.options.extensions.startInline.forEach((C) => {
+          $ = C.call({ lexer: this }, w), typeof $ == "number" && $ >= 0 && (f = Math.min(f, $));
+        }), f < 1 / 0 && f >= 0 && (x = e.substring(0, f + 1));
+      }
+      if (c = this.tokenizer.inlineText(x)) {
+        e = e.substring(c.raw.length), c.raw.slice(-1) !== "_" && (a = c.raw.slice(-1)), o = !0;
+        let f = t.at(-1);
+        (f == null ? void 0 : f.type) === "text" ? (f.raw += c.raw, f.text += c.text) : t.push(c);
+        continue;
+      }
+      if (e) {
+        let f = "Infinite loop on byte: " + e.charCodeAt(0);
+        if (this.options.silent) {
+          console.error(f);
+          break;
+        } else throw new Error(f);
+      }
+    }
+    return t;
+  }
+}, U = class {
+  constructor(n) {
+    g(this, "options");
+    g(this, "parser");
+    this.options = n || L;
+  }
+  space(n) {
+    return "";
+  }
+  code({ text: n, lang: e, escaped: t }) {
+    var r;
+    let s = (r = (e || "").match(y.notSpaceStart)) == null ? void 0 : r[0], i = n.replace(y.endingNewline, "") + `
+`;
+    return s ? '<pre><code class="language-' + T(s) + '">' + (t ? i : T(i, !0)) + `</code></pre>
+` : "<pre><code>" + (t ? i : T(i, !0)) + `</code></pre>
+`;
+  }
+  blockquote({ tokens: n }) {
+    return `<blockquote>
+${this.parser.parse(n)}</blockquote>
+`;
+  }
+  html({ text: n }) {
+    return n;
+  }
+  def(n) {
+    return "";
+  }
+  heading({ tokens: n, depth: e }) {
+    return `<h${e}>${this.parser.parseInline(n)}</h${e}>
+`;
+  }
+  hr(n) {
+    return `<hr>
+`;
+  }
+  list(n) {
+    let e = n.ordered, t = n.start, s = "";
+    for (let o = 0; o < n.items.length; o++) {
+      let a = n.items[o];
+      s += this.listitem(a);
+    }
+    let i = e ? "ol" : "ul", r = e && t !== 1 ? ' start="' + t + '"' : "";
+    return "<" + i + r + `>
+` + s + "</" + i + `>
+`;
+  }
+  listitem(n) {
+    return `<li>${this.parser.parse(n.tokens)}</li>
+`;
+  }
+  checkbox({ checked: n }) {
+    return "<input " + (n ? 'checked="" ' : "") + 'disabled="" type="checkbox"> ';
+  }
+  paragraph({ tokens: n }) {
+    return `<p>${this.parser.parseInline(n)}</p>
+`;
+  }
+  table(n) {
+    let e = "", t = "";
+    for (let i = 0; i < n.header.length; i++) t += this.tablecell(n.header[i]);
+    e += this.tablerow({ text: t });
+    let s = "";
+    for (let i = 0; i < n.rows.length; i++) {
+      let r = n.rows[i];
+      t = "";
+      for (let o = 0; o < r.length; o++) t += this.tablecell(r[o]);
+      s += this.tablerow({ text: t });
+    }
+    return s && (s = `<tbody>${s}</tbody>`), `<table>
+<thead>
+` + e + `</thead>
+` + s + `</table>
+`;
+  }
+  tablerow({ text: n }) {
+    return `<tr>
+${n}</tr>
+`;
+  }
+  tablecell(n) {
+    let e = this.parser.parseInline(n.tokens), t = n.header ? "th" : "td";
+    return (n.align ? `<${t} align="${n.align}">` : `<${t}>`) + e + `</${t}>
+`;
+  }
+  strong({ tokens: n }) {
+    return `<strong>${this.parser.parseInline(n)}</strong>`;
+  }
+  em({ tokens: n }) {
+    return `<em>${this.parser.parseInline(n)}</em>`;
+  }
+  codespan({ text: n }) {
+    return `<code>${T(n, !0)}</code>`;
+  }
+  br(n) {
+    return "<br>";
+  }
+  del({ tokens: n }) {
+    return `<del>${this.parser.parseInline(n)}</del>`;
+  }
+  link({ href: n, title: e, tokens: t }) {
+    let s = this.parser.parseInline(t), i = he(n);
+    if (i === null) return s;
+    n = i;
+    let r = '<a href="' + n + '"';
+    return e && (r += ' title="' + T(e) + '"'), r += ">" + s + "</a>", r;
+  }
+  image({ href: n, title: e, text: t, tokens: s }) {
+    s && (t = this.parser.parseInline(s, this.parser.textRenderer));
+    let i = he(n);
+    if (i === null) return T(t);
+    n = i;
+    let r = `<img src="${n}" alt="${t}"`;
+    return e && (r += ` title="${T(e)}"`), r += ">", r;
+  }
+  text(n) {
+    return "tokens" in n && n.tokens ? this.parser.parseInline(n.tokens) : "escaped" in n && n.escaped ? n.text : T(n.text);
+  }
+}, ie = class {
+  strong({ text: n }) {
+    return n;
+  }
+  em({ text: n }) {
+    return n;
+  }
+  codespan({ text: n }) {
+    return n;
+  }
+  del({ text: n }) {
+    return n;
+  }
+  html({ text: n }) {
+    return n;
+  }
+  text({ text: n }) {
+    return n;
+  }
+  link({ text: n }) {
+    return "" + n;
+  }
+  image({ text: n }) {
+    return "" + n;
+  }
+  br() {
+    return "";
+  }
+  checkbox({ raw: n }) {
+    return n;
+  }
+}, M = class V {
+  constructor(e) {
+    g(this, "options");
+    g(this, "renderer");
+    g(this, "textRenderer");
+    this.options = e || L, this.options.renderer = this.options.renderer || new U(), this.renderer = this.options.renderer, this.renderer.options = this.options, this.renderer.parser = this, this.textRenderer = new ie();
+  }
+  static parse(e, t) {
+    return new V(t).parse(e);
+  }
+  static parseInline(e, t) {
+    return new V(t).parseInline(e);
+  }
+  parse(e) {
+    var s, i;
+    let t = "";
+    for (let r = 0; r < e.length; r++) {
+      let o = e[r];
+      if ((i = (s = this.options.extensions) == null ? void 0 : s.renderers) != null && i[o.type]) {
+        let h = o, l = this.options.extensions.renderers[h.type].call({ parser: this }, h);
+        if (l !== !1 || !["space", "hr", "heading", "code", "table", "blockquote", "list", "html", "def", "paragraph", "text"].includes(h.type)) {
+          t += l || "";
+          continue;
+        }
+      }
+      let a = o;
+      switch (a.type) {
+        case "space": {
+          t += this.renderer.space(a);
+          break;
+        }
+        case "hr": {
+          t += this.renderer.hr(a);
+          break;
+        }
+        case "heading": {
+          t += this.renderer.heading(a);
+          break;
+        }
+        case "code": {
+          t += this.renderer.code(a);
+          break;
+        }
+        case "table": {
+          t += this.renderer.table(a);
+          break;
+        }
+        case "blockquote": {
+          t += this.renderer.blockquote(a);
+          break;
+        }
+        case "list": {
+          t += this.renderer.list(a);
+          break;
+        }
+        case "checkbox": {
+          t += this.renderer.checkbox(a);
+          break;
+        }
+        case "html": {
+          t += this.renderer.html(a);
+          break;
+        }
+        case "def": {
+          t += this.renderer.def(a);
+          break;
+        }
+        case "paragraph": {
+          t += this.renderer.paragraph(a);
+          break;
+        }
+        case "text": {
+          t += this.renderer.text(a);
+          break;
+        }
+        default: {
+          let h = 'Token with "' + a.type + '" type was not found.';
+          if (this.options.silent) return console.error(h), "";
+          throw new Error(h);
+        }
+      }
+    }
+    return t;
+  }
+  parseInline(e, t = this.renderer) {
+    var i, r;
+    let s = "";
+    for (let o = 0; o < e.length; o++) {
+      let a = e[o];
+      if ((r = (i = this.options.extensions) == null ? void 0 : i.renderers) != null && r[a.type]) {
+        let l = this.options.extensions.renderers[a.type].call({ parser: this }, a);
+        if (l !== !1 || !["escape", "html", "link", "image", "strong", "em", "codespan", "br", "del", "text"].includes(a.type)) {
+          s += l || "";
+          continue;
+        }
+      }
+      let h = a;
+      switch (h.type) {
+        case "escape": {
+          s += t.text(h);
+          break;
+        }
+        case "html": {
+          s += t.html(h);
+          break;
+        }
+        case "link": {
+          s += t.link(h);
+          break;
+        }
+        case "image": {
+          s += t.image(h);
+          break;
+        }
+        case "checkbox": {
+          s += t.checkbox(h);
+          break;
+        }
+        case "strong": {
+          s += t.strong(h);
+          break;
+        }
+        case "em": {
+          s += t.em(h);
+          break;
+        }
+        case "codespan": {
+          s += t.codespan(h);
+          break;
+        }
+        case "br": {
+          s += t.br(h);
+          break;
+        }
+        case "del": {
+          s += t.del(h);
+          break;
+        }
+        case "text": {
+          s += t.text(h);
+          break;
+        }
+        default: {
+          let l = 'Token with "' + h.type + '" type was not found.';
+          if (this.options.silent) return console.error(l), "";
+          throw new Error(l);
+        }
+      }
+    }
+    return s;
+  }
+}, H, O = (H = class {
+  constructor(n) {
+    g(this, "options");
+    g(this, "block");
+    this.options = n || L;
+  }
+  preprocess(n) {
+    return n;
+  }
+  postprocess(n) {
+    return n;
+  }
+  processAllTokens(n) {
+    return n;
+  }
+  emStrongMask(n) {
+    return n;
+  }
+  provideLexer() {
+    return this.block ? E.lex : E.lexInline;
+  }
+  provideParser() {
+    return this.block ? M.parse : M.parseInline;
+  }
+}, g(H, "passThroughHooks", /* @__PURE__ */ new Set(["preprocess", "postprocess", "processAllTokens", "emStrongMask"])), g(H, "passThroughHooksRespectAsync", /* @__PURE__ */ new Set(["preprocess", "postprocess", "processAllTokens"])), H), yt = class {
+  constructor(...n) {
+    g(this, "defaults", X());
+    g(this, "options", this.setOptions);
+    g(this, "parse", this.parseMarkdown(!0));
+    g(this, "parseInline", this.parseMarkdown(!1));
+    g(this, "Parser", M);
+    g(this, "Renderer", U);
+    g(this, "TextRenderer", ie);
+    g(this, "Lexer", E);
+    g(this, "Tokenizer", W);
+    g(this, "Hooks", O);
+    this.use(...n);
+  }
+  walkTokens(n, e) {
+    var s, i;
+    let t = [];
+    for (let r of n) switch (t = t.concat(e.call(this, r)), r.type) {
+      case "table": {
+        let o = r;
+        for (let a of o.header) t = t.concat(this.walkTokens(a.tokens, e));
+        for (let a of o.rows) for (let h of a) t = t.concat(this.walkTokens(h.tokens, e));
+        break;
+      }
+      case "list": {
+        let o = r;
+        t = t.concat(this.walkTokens(o.items, e));
+        break;
+      }
+      default: {
+        let o = r;
+        (i = (s = this.defaults.extensions) == null ? void 0 : s.childTokens) != null && i[o.type] ? this.defaults.extensions.childTokens[o.type].forEach((a) => {
+          let h = o[a].flat(1 / 0);
+          t = t.concat(this.walkTokens(h, e));
+        }) : o.tokens && (t = t.concat(this.walkTokens(o.tokens, e)));
+      }
+    }
+    return t;
+  }
+  use(...n) {
+    let e = this.defaults.extensions || { renderers: {}, childTokens: {} };
+    return n.forEach((t) => {
+      let s = { ...t };
+      if (s.async = this.defaults.async || s.async || !1, t.extensions && (t.extensions.forEach((i) => {
+        if (!i.name) throw new Error("extension name required");
+        if ("renderer" in i) {
+          let r = e.renderers[i.name];
+          r ? e.renderers[i.name] = function(...o) {
+            let a = i.renderer.apply(this, o);
+            return a === !1 && (a = r.apply(this, o)), a;
+          } : e.renderers[i.name] = i.renderer;
+        }
+        if ("tokenizer" in i) {
+          if (!i.level || i.level !== "block" && i.level !== "inline") throw new Error("extension level must be 'block' or 'inline'");
+          let r = e[i.level];
+          r ? r.unshift(i.tokenizer) : e[i.level] = [i.tokenizer], i.start && (i.level === "block" ? e.startBlock ? e.startBlock.push(i.start) : e.startBlock = [i.start] : i.level === "inline" && (e.startInline ? e.startInline.push(i.start) : e.startInline = [i.start]));
+        }
+        "childTokens" in i && i.childTokens && (e.childTokens[i.name] = i.childTokens);
+      }), s.extensions = e), t.renderer) {
+        let i = this.defaults.renderer || new U(this.defaults);
+        for (let r in t.renderer) {
+          if (!(r in i)) throw new Error(`renderer '${r}' does not exist`);
+          if (["options", "parser"].includes(r)) continue;
+          let o = r, a = t.renderer[o], h = i[o];
+          i[o] = (...l) => {
+            let p = a.apply(i, l);
+            return p === !1 && (p = h.apply(i, l)), p || "";
+          };
+        }
+        s.renderer = i;
+      }
+      if (t.tokenizer) {
+        let i = this.defaults.tokenizer || new W(this.defaults);
+        for (let r in t.tokenizer) {
+          if (!(r in i)) throw new Error(`tokenizer '${r}' does not exist`);
+          if (["options", "rules", "lexer"].includes(r)) continue;
+          let o = r, a = t.tokenizer[o], h = i[o];
+          i[o] = (...l) => {
+            let p = a.apply(i, l);
+            return p === !1 && (p = h.apply(i, l)), p;
+          };
+        }
+        s.tokenizer = i;
+      }
+      if (t.hooks) {
+        let i = this.defaults.hooks || new O();
+        for (let r in t.hooks) {
+          if (!(r in i)) throw new Error(`hook '${r}' does not exist`);
+          if (["options", "block"].includes(r)) continue;
+          let o = r, a = t.hooks[o], h = i[o];
+          O.passThroughHooks.has(r) ? i[o] = (l) => {
+            if (this.defaults.async && O.passThroughHooksRespectAsync.has(r)) return (async () => {
+              let u = await a.call(i, l);
+              return h.call(i, u);
+            })();
+            let p = a.call(i, l);
+            return h.call(i, p);
+          } : i[o] = (...l) => {
+            if (this.defaults.async) return (async () => {
+              let u = await a.apply(i, l);
+              return u === !1 && (u = await h.apply(i, l)), u;
+            })();
+            let p = a.apply(i, l);
+            return p === !1 && (p = h.apply(i, l)), p;
+          };
+        }
+        s.hooks = i;
+      }
+      if (t.walkTokens) {
+        let i = this.defaults.walkTokens, r = t.walkTokens;
+        s.walkTokens = function(o) {
+          let a = [];
+          return a.push(r.call(this, o)), i && (a = a.concat(i.call(this, o))), a;
+        };
+      }
+      this.defaults = { ...this.defaults, ...s };
+    }), this;
+  }
+  setOptions(n) {
+    return this.defaults = { ...this.defaults, ...n }, this;
+  }
+  lexer(n, e) {
+    return E.lex(n, e ?? this.defaults);
+  }
+  parser(n, e) {
+    return M.parse(n, e ?? this.defaults);
+  }
+  parseMarkdown(n) {
+    return (e, t) => {
+      let s = { ...t }, i = { ...this.defaults, ...s }, r = this.onError(!!i.silent, !!i.async);
+      if (this.defaults.async === !0 && s.async === !1) return r(new Error("marked(): The async option was set to true by an extension. Remove async: false from the parse options object to return a Promise."));
+      if (typeof e > "u" || e === null) return r(new Error("marked(): input parameter is undefined or null"));
+      if (typeof e != "string") return r(new Error("marked(): input parameter is of type " + Object.prototype.toString.call(e) + ", string expected"));
+      if (i.hooks && (i.hooks.options = i, i.hooks.block = n), i.async) return (async () => {
+        let o = i.hooks ? await i.hooks.preprocess(e) : e, a = await (i.hooks ? await i.hooks.provideLexer() : n ? E.lex : E.lexInline)(o, i), h = i.hooks ? await i.hooks.processAllTokens(a) : a;
+        i.walkTokens && await Promise.all(this.walkTokens(h, i.walkTokens));
+        let l = await (i.hooks ? await i.hooks.provideParser() : n ? M.parse : M.parseInline)(h, i);
+        return i.hooks ? await i.hooks.postprocess(l) : l;
+      })().catch(r);
+      try {
+        i.hooks && (e = i.hooks.preprocess(e));
+        let o = (i.hooks ? i.hooks.provideLexer() : n ? E.lex : E.lexInline)(e, i);
+        i.hooks && (o = i.hooks.processAllTokens(o)), i.walkTokens && this.walkTokens(o, i.walkTokens);
+        let a = (i.hooks ? i.hooks.provideParser() : n ? M.parse : M.parseInline)(o, i);
+        return i.hooks && (a = i.hooks.postprocess(a)), a;
+      } catch (o) {
+        return r(o);
+      }
+    };
+  }
+  onError(n, e) {
+    return (t) => {
+      if (t.message += `
+Please report this to https://github.com/markedjs/marked.`, n) {
+        let s = "<p>An error occurred:</p><pre>" + T(t.message + "", !0) + "</pre>";
+        return e ? Promise.resolve(s) : s;
+      }
+      if (e) return Promise.reject(t);
+      throw t;
+    };
+  }
+}, R = new yt();
+function m(n, e) {
+  return R.parse(n, e);
+}
+m.options = m.setOptions = function(n) {
+  return R.setOptions(n), m.defaults = R.defaults, ue(m.defaults), m;
+};
+m.getDefaults = X;
+m.defaults = L;
+m.use = function(...n) {
+  return R.use(...n), m.defaults = R.defaults, ue(m.defaults), m;
+};
+m.walkTokens = function(n, e) {
+  return R.walkTokens(n, e);
+};
+m.parseInline = R.parseInline;
+m.Parser = M;
+m.parser = M.parse;
+m.Renderer = U;
+m.TextRenderer = ie;
+m.Lexer = E;
+m.lexer = E.lex;
+m.Tokenizer = W;
+m.Hooks = O;
+m.parse = m;
+m.options;
+m.setOptions;
+m.use;
+m.walkTokens;
+m.parseInline;
+M.parse;
+E.lex;
+const b = {
+  MESSAGE: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
+  CLOSE: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
+  MAXIMIZE: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>',
+  MINIMIZE: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>',
+  SEND: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>',
+  COPY: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+  REGEN: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>',
+  WEB: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>',
+  DEEP: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"/>
+<path d="m13.56 11.747 4.332-.924"/>
+<path d="m16 21-3.105-6.21"/>
+<path d="M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z"/>
+<path d="m6.158 8.633 1.114 4.456"/>
+<path d="m8 21 3.105-6.21"/>
+<circle cx="12" cy="13" r="2"/>
+</svg>`,
+  SEARCH: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
+  NAXIE: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>',
+  SPARKLES: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.91 5.89L20 10.8l-5.91 1.91L12 18.6l-1.91-5.89L4 10.8l5.91-1.91L12 3z"></path></svg>',
+  SETTINGS: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>',
+  PLUS: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
+  UPLOAD: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>',
+  UNDO: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 6.7 6.7 0 0 0-5 2.5L3 13"></path></svg>',
+  USER: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+  FILE_MINUS: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>'
+};
+class Et {
+  constructor(e, t) {
+    g(this, "core");
+    g(this, "container");
+    g(this, "options");
+    g(this, "chatWindow", null);
+    g(this, "chatBubble", null);
+    // Cache for options
+    g(this, "availableModels", []);
+    g(this, "settingsOptions", { domains: [], tags: [], prompts: [] });
+    // Feature states
+    g(this, "webSearch", !1);
+    g(this, "deepSearch", !1);
+    if (typeof e == "string") {
+      const s = document.querySelector(e);
+      if (!s) throw new Error(`Container "${e}" not found`);
+      this.container = s;
+    } else
+      this.container = e;
+    this.options = {
+      title: "Chat with Dashboard",
+      placeholder: "Ask a question",
+      showBubble: !0,
+      ...t
+    }, this.core = new qe(t), this.render(), this.setupEventListeners(), t.websocketConfig && this.core.connect(), this.initOptions();
+  }
+  async initOptions() {
+    this.availableModels = await this.core.fetchModels(), this.settingsOptions = await this.core.fetchSettingsOptions();
+  }
+  render() {
+    this.container.classList.add("naxie-container"), this.options.showBubble && (this.chatBubble = this.createChatBubble(), this.container.appendChild(this.chatBubble)), this.chatWindow = this.createChatWindow(), this.container.appendChild(this.chatWindow), this.updateMessages();
+  }
+  createChatBubble() {
+    const e = document.createElement("button");
+    return e.className = "naxie-chat-bubble", e.innerHTML = b.MESSAGE, e.addEventListener("click", () => this.open()), e;
+  }
+  createChatWindow() {
+    const e = document.createElement("div");
+    e.className = "naxie-chat-window";
+    const t = this.core.getState();
+    return e.innerHTML = `
+      <div class="naxie-chat-header">
+        <h3 class="naxie-chat-title">${this.options.title}</h3>
+        <div class="naxie-chat-actions">
+          <button class="naxie-btn-maximize" title="Maximize">${b.MAXIMIZE}</button>
+          <button class="naxie-btn-close" title="Close">${b.CLOSE}</button>
+        </div>
+      </div>
+      <div class="naxie-chat-body">
+        <div class="naxie-messages"></div>
+      </div>
+      <div class="naxie-chat-footer">
+        <div class="naxie-input-card">
+          <div class="naxie-relative-wrapper">
+            <div class="naxie-search-icon">${b.SEARCH}</div>
+            <textarea 
+              class="naxie-textarea" 
+              placeholder="${this.options.placeholder}"
+              rows="1"
+            ></textarea>
+            <div class="naxie-send-wrapper">
+              <button class="naxie-btn-send" title="Send message">
+                ${b.SEND}
+              </button>
+            </div>
+          </div>
+          <div class="naxie-toolbar-container">
+            <div class="naxie-toolbar-group">
+              <div class="naxie-popover-anchor" style="position:relative">
+                <button class="naxie-toggle naxie-toggle--model" style="min-width: 80px;">
+                  <span class="naxie-toggle-icon">${b.SPARKLES}</span>
+                  <span class="naxie-model-name" style="max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.selectedModel}</span>
+                </button>
+                <div class="naxie-dropdown naxie-dropdown--models"></div>
+              </div>
+              <button class="naxie-toggle naxie-toggle--web" title="Web Search">
+                <span class="naxie-toggle-icon">${b.WEB}</span>
+              </button>
+              <button class="naxie-toggle naxie-toggle--deep" title="Deep Search">
+                <span class="naxie-toggle-icon">${b.DEEP}</span>
+              </button>
+              <div class="naxie-popover-anchor" style="position:relative">
+                <button class="naxie-toggle naxie-toggle--more">
+                  <span class="naxie-toggle-icon">${b.PLUS}</span>
+                </button>
+                <div class="naxie-dropdown naxie-dropdown--more">
+                    <div class="naxie-dropdown-label">Options</div>
+                    <div class="naxie-dropdown-separator"></div>
+                    <div class="naxie-dropdown-item naxie-item--upload">
+                        ${b.UPLOAD} <span>Upload Document</span>
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="naxie-toolbar-group">
+              <div class="naxie-popover-anchor" style="position:relative">
+                <button class="naxie-toggle naxie-toggle--settings">
+                  <span class="naxie-toggle-icon">${b.SETTINGS}</span>
+                </button>
+                <div class="naxie-popover naxie-popover--settings">
+                    <!-- Settings content injected here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Upload Dialog Overlay -->
+      <div class="naxie-dialog-overlay naxie-upload-overlay">
+        <div class="naxie-dialog">
+            <div class="naxie-dialog-header">
+                <div class="naxie-dialog-title">Instant Upload</div>
+                <div class="naxie-dialog-desc">Inject context directly into the AI's memory.</div>
+            </div>
+            <div class="naxie-upload-zone">
+                <div class="naxie-upload-icon" style="opacity:0.5">${b.UPLOAD}</div>
+                <p style="margin:0; font-weight:500; color:#1e293b">Upload Documents</p>
+                <p style="margin:5px 0 0; font-size:12px; color:#64748b">Support for PDF, TXT, and MD</p>
+                <input type="file" multiple style="display:none" class="naxie-file-input">
+            </div>
+            <div class="naxie-dialog-footer">
+                <button class="naxie-btn-cancel">Cancel</button>
+                <button class="naxie-btn-confirm">Start Upload</button>
+            </div>
+        </div>
+      </div>
+    `, e;
+  }
+  setupEventListeners() {
+    var u, d, c;
+    if (!this.chatWindow) return;
+    (u = this.chatWindow.querySelector(".naxie-btn-close")) == null || u.addEventListener("click", () => this.close()), (d = this.chatWindow.querySelector(".naxie-btn-maximize")) == null || d.addEventListener("click", () => this.toggleMaximize());
+    const e = this.chatWindow.querySelector(".naxie-toggle--web");
+    e == null || e.addEventListener("click", () => {
+      this.webSearch = !this.webSearch, e.classList.toggle("naxie-toggle--active", this.webSearch);
+    });
+    const t = this.chatWindow.querySelector(".naxie-toggle--deep");
+    t == null || t.addEventListener("click", () => {
+      this.deepSearch = !this.deepSearch, t.classList.toggle("naxie-toggle--active", this.deepSearch);
+    });
+    const s = this.chatWindow.querySelector(".naxie-toggle--model"), i = this.chatWindow.querySelector(".naxie-dropdown--models");
+    s == null || s.addEventListener("click", (x) => {
+      x.stopPropagation(), this.closeAllPopovers(), this.renderModelList(i), i.classList.toggle("naxie-dropdown--open");
+    });
+    const r = this.chatWindow.querySelector(".naxie-toggle--more"), o = this.chatWindow.querySelector(".naxie-dropdown--more");
+    r == null || r.addEventListener("click", (x) => {
+      x.stopPropagation(), this.closeAllPopovers(), o.classList.toggle("naxie-dropdown--open");
+    }), (c = this.chatWindow.querySelector(".naxie-item--upload")) == null || c.addEventListener("click", () => {
+      this.closeAllPopovers(), this.showUploadDialog();
+    });
+    const a = this.chatWindow.querySelector(".naxie-toggle--settings"), h = this.chatWindow.querySelector(".naxie-popover--settings");
+    a == null || a.addEventListener("click", (x) => {
+      x.stopPropagation(), this.closeAllPopovers(), this.renderSettings(h), h.classList.toggle("naxie-popover--open");
+    }), document.addEventListener("click", () => this.closeAllPopovers());
+    const l = this.chatWindow.querySelector(".naxie-textarea"), p = this.chatWindow.querySelector(".naxie-btn-send");
+    l == null || l.addEventListener("input", () => {
+      l.style.height = "auto", l.style.height = Math.min(l.scrollHeight, 150) + "px";
+    }), l == null || l.addEventListener("keydown", (x) => {
+      x.key === "Enter" && !x.shiftKey && (x.preventDefault(), this.handleSubmit());
+    }), p == null || p.addEventListener("click", () => this.handleSubmit()), this.core.on(S.MESSAGE_RECEIVED, () => this.updateMessages()), this.core.on(S.MESSAGE_SENT, () => {
+      this.updateMessages(), this.clearInput();
+    }), this.core.on(S.STATE_CHANGED, (x) => this.updateUI(x));
+  }
+  closeAllPopovers() {
+    var e;
+    (e = this.chatWindow) == null || e.querySelectorAll(".naxie-dropdown--open, .naxie-popover--open").forEach((t) => {
+      t.classList.remove("naxie-dropdown--open", "naxie-popover--open");
+    });
+  }
+  renderModelList(e) {
+    if (this.availableModels.length === 0) {
+      e.innerHTML = '<div class="naxie-dropdown-item">Loading models...</div>';
+      return;
+    }
+    e.innerHTML = "", this.availableModels.forEach((t) => {
+      const s = document.createElement("div");
+      s.className = "naxie-dropdown-item", s.innerHTML = `
+            <div style="display:flex; flex-direction:column">
+                <span style="font-weight:500">${t.name}</span>
+                <span style="font-size:10px; color:#6b7280">${(t.tags || []).join(" • ")}</span>
+            </div>
+          `, s.onclick = () => {
+        this.core.setSelectedModel(t.name), this.closeAllPopovers();
+      }, e.appendChild(s);
+    });
+  }
+  renderSettings(e) {
+    var h;
+    const s = this.core.getState().settings;
+    e.innerHTML = `
+        <div style="display:grid; gap: 12px;">
+            <div>
+                <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">Domain</div>
+                <select class="naxie-select naxie-select--domain">
+                    <option value="">Select Domain</option>
+                    ${this.settingsOptions.domains.map((l) => {
+      var p;
+      return `<option value="${l.id}" ${((p = s.domain) == null ? void 0 : p.id) === l.id ? "selected" : ""}>${l.name}</option>`;
+    }).join("")}
+                </select>
+            </div>
+            <div>
+                <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">Tags</div>
+                <select class="naxie-select naxie-select--tags" multiple style="height: 60px;">
+                    ${this.settingsOptions.tags.map((l) => `<option value="${l.id}" ${s.tags.find((p) => p.id === l.id) ? "selected" : ""}>${l.name}</option>`).join("")}
+                </select>
+            </div>
+            <div class="naxie-slider-container">
+                <label class="naxie-slider-label">Sensitivity (${s.sensitivity}%)</label>
+                <input type="range" class="naxie-slider naxie-slider--sensitivity" min="0" max="100" value="${s.sensitivity}">
+            </div>
+            <div>
+                <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">System Prompt</div>
+                <select class="naxie-select naxie-select--prompt">
+                    <option value="">Default Prompt</option>
+                    ${this.settingsOptions.prompts.map((l) => `<option value="${l.id}" ${s.prompt === l.id ? "selected" : ""}>${l.title || l.name}</option>`).join("")}
+                </select>
+            </div>
+            <button class="naxie-btn-footer naxie-btn-outline naxie-btn--reset">
+                ${b.UNDO} Reset Settings
+            </button>
+        </div>
+      `;
+    const i = e.querySelector(".naxie-slider--sensitivity");
+    i.oninput = () => {
+      const l = parseInt(i.value);
+      e.querySelector(".naxie-slider-label").textContent = `Sensitivity (${l}%)`, this.updateSettings({ sensitivity: l });
+    };
+    const r = e.querySelector(".naxie-select--domain");
+    r.onchange = () => {
+      const l = r.value, p = this.settingsOptions.domains.find((u) => u.id === l);
+      this.updateSettings({ domain: p });
+    };
+    const o = e.querySelector(".naxie-select--tags");
+    o.onchange = () => {
+      const l = Array.from(o.selectedOptions).map(
+        (p) => this.settingsOptions.tags.find((u) => u.id === p.value)
+      );
+      this.updateSettings({ tags: l });
+    };
+    const a = e.querySelector(".naxie-select--prompt");
+    a.onchange = () => {
+      this.updateSettings({ prompt: a.value });
+    }, (h = e.querySelector(".naxie-btn--reset")) == null || h.addEventListener("click", () => {
+      this.updateSettings({
+        domain: void 0,
+        tags: [],
+        sensitivity: 70,
+        prompt: ""
+      }), this.renderSettings(e);
+    });
+  }
+  updateSettings(e) {
+    this.core.updateSettings(e);
+  }
+  showUploadDialog() {
+    var a;
+    const e = (a = this.chatWindow) == null ? void 0 : a.querySelector(".naxie-upload-overlay");
+    e.classList.add("naxie-dialog-overlay--open");
+    const t = e.querySelector(".naxie-file-input"), s = e.querySelector(".naxie-upload-zone"), i = e.querySelector(".naxie-btn-confirm"), r = e.querySelector(".naxie-btn-cancel");
+    s.onclick = () => t.click();
+    let o = [];
+    t.onchange = () => {
+      o = Array.from(t.files || []), s.querySelector("p").textContent = o.length > 0 ? `${o.length} files selected` : "Click or drag files here to upload";
+    }, i.onclick = async () => {
+      if (o.length !== 0) {
+        i.disabled = !0, i.textContent = "Uploading...";
+        try {
+          await this.core.uploadFiles(o), e.classList.remove("naxie-dialog-overlay--open");
+        } catch (h) {
+          alert("Upload failed: " + h);
+        } finally {
+          i.disabled = !1, i.textContent = "Upload";
+        }
+      }
+    }, r.onclick = () => e.classList.remove("naxie-dialog-overlay--open");
+  }
+  handleSubmit() {
+    var r, o;
+    const e = (r = this.chatWindow) == null ? void 0 : r.querySelector(".naxie-textarea");
+    if (!e) return;
+    const t = e.value.trim(), s = this.core.getState(), i = s.settings;
+    if (t) {
+      const a = parseFloat(
+        (0.1 + (i.sensitivity - 1) * 0.00898989898989899).toFixed(2)
+      ).toString();
+      this.core.sendMessage(t, {
+        model: s.selectedModel,
+        web_search: this.webSearch,
+        deep_search: this.deepSearch,
+        domain: (o = i.domain) == null ? void 0 : o.id,
+        tags: i.tags.map((h) => h.id),
+        score: a,
+        prompt: i.prompt
+      });
+    }
+  }
+  clearInput() {
+    var t;
+    const e = (t = this.chatWindow) == null ? void 0 : t.querySelector(".naxie-textarea");
+    e && (e.value = "", e.style.height = "auto");
+  }
+  updateMessages() {
+    var i;
+    const e = (i = this.chatWindow) == null ? void 0 : i.querySelector(".naxie-messages");
+    if (!e) return;
+    const t = this.core.getState(), s = t.chatHistory;
+    if (s.length === 0) {
+      e.innerHTML = `
+        <div class="naxie-empty-state naxie-fade-in">
+          <div class="naxie-empty-icon">${b.NAXIE}</div>
+          <div class="naxie-empty-title">Welcome to Naxie</div>
+          <div class="naxie-empty-desc">Ask a question to start exploring your data directly from the dashboard.</div>
+        </div>
+      `;
+      return;
+    }
+    if (e.innerHTML = "", s.forEach((r, o) => {
+      if (r.role === "user") {
+        const a = document.createElement("div");
+        a.className = "naxie-message-wrapper naxie-message--user-wrapper naxie-fade-in", a.innerHTML = `
+          <div class="naxie-avatar naxie-avatar--user">${b.USER}</div>
+          <div class="naxie-message-container">
+            <div class="naxie-message-content" style="font-weight: 500;">${r.content}</div>
+          </div>
+        `, e.appendChild(a);
+      }
+      if (r.role === "assistant") {
+        const a = document.createElement("div");
+        a.className = "naxie-message-wrapper naxie-message--assistant-wrapper naxie-fade-in";
+        const h = document.createElement("div");
+        h.className = "naxie-avatar naxie-avatar--assistant", h.innerHTML = b.NAXIE;
+        const l = document.createElement("div");
+        l.className = "naxie-message-container";
+        const p = document.createElement("div");
+        if (p.className = "naxie-message-content", p.innerHTML = m.parse(r.content || ""), l.appendChild(p), !t.isLoading || s.length - 1 > o) {
+          const u = document.createElement("div");
+          u.className = "naxie-message-footer";
+          const d = document.createElement("div");
+          d.className = "naxie-message-actions";
+          const c = document.createElement("button");
+          c.className = "naxie-action-btn", c.innerHTML = b.COPY, c.onclick = () => {
+            navigator.clipboard.writeText(r.content), c.style.color = "#3b82f6", setTimeout(() => c.style.color = "", 1e3);
+          };
+          const x = document.createElement("button");
+          if (x.className = "naxie-action-btn", x.innerHTML = b.REGEN, x.onclick = () => this.core.regenerate(), d.appendChild(c), d.appendChild(x), u.appendChild(d), r.refs && r.refs.refs && r.refs.refs.length > 0) {
+            const f = document.createElement("div");
+            f.className = "naxie-refs-container", r.refs.refs.slice(0, 3).forEach((w, $) => {
+              const C = document.createElement("button");
+              C.className = "naxie-ref-chip", C.innerHTML = `${b.FILE_MINUS} Ref ${$ + 1}`, C.onclick = () => console.log("Jump to ref", w), f.appendChild(C);
+            }), u.appendChild(f);
+          }
+          l.appendChild(u);
+        }
+        a.appendChild(h), a.appendChild(l), e.appendChild(a);
+      }
+    }), t.isLoading) {
+      const r = document.createElement("div");
+      r.className = "naxie-message-wrapper naxie-message--assistant-wrapper", r.innerHTML = `
+        <div class="naxie-avatar naxie-avatar--assistant">${b.NAXIE}</div>
+        <div class="naxie-message-container">
+           <div class="naxie-typing">
+            <div class="naxie-dot"></div>
+            <div class="naxie-dot"></div>
+            <div class="naxie-dot"></div>
+          </div>
+        </div>
+      `, e.appendChild(r);
+    }
+    e.scrollTop = e.scrollHeight;
+  }
+  updateUI(e) {
+    if (!this.chatWindow) return;
+    const t = this.chatWindow.querySelector(".naxie-btn-maximize");
+    t && (t.innerHTML = e.isMaximized ? b.MINIMIZE : b.MAXIMIZE), e.isMaximized ? this.chatWindow.classList.add("naxie-chat-window--maximized") : this.chatWindow.classList.remove("naxie-chat-window--maximized");
+    const s = this.chatWindow.querySelector(".naxie-textarea"), i = this.chatWindow.querySelector(".naxie-btn-send");
+    s && (s.disabled = e.isLoading), i && (i.disabled = e.isLoading);
+    const r = this.chatWindow.querySelector(".naxie-model-name");
+    r && (r.textContent = e.selectedModel), this.updateMessages();
+  }
+  open() {
+    var e;
+    this.chatWindow && (this.chatWindow.classList.add("naxie-chat-window--open"), this.chatBubble && (this.chatBubble.style.display = "none"), this.core.toggleOpen(), (e = this.chatWindow.querySelector(".naxie-textarea")) == null || e.focus());
+  }
+  close() {
+    this.chatWindow && (this.chatWindow.classList.remove("naxie-chat-window--open"), this.chatBubble && (this.chatBubble.style.display = "flex"), this.closeAllPopovers(), this.core.toggleOpen());
+  }
+  toggleMaximize() {
+    this.core.toggleMaximized();
+  }
+  sendMessage(e) {
+    this.core.sendMessage(e);
+  }
+  on(e, t) {
+    return this.core.on(e, t);
+  }
+  destroy() {
+    this.core.destroy(), this.container.innerHTML = "";
+  }
+}
+export {
+  qe as NaxieCore,
+  S as NaxieEvents,
+  Et as NaxieVanilla
+};

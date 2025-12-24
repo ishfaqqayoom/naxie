@@ -1,8 +1,8 @@
 {
   "name": "@ishfaqqayoom/naxie",
-  "version": "1.0.13",
-   "access": "public",
-  "description": "A reusable chat bubble component with AI-powered conversation capabilities",
+  "version": "1.1.4",
+  "access": "public",
+  "description": "Framework-agnostic AI chat component - works with React, Angular, Vue, jQuery, vanilla JavaScript, and more",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,14 +12,40 @@
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
-    "./style.css": "./dist/style.css"
+    "./core": {
+      "import": "./dist/core/index.mjs",
+      "require": "./dist/core/index.js",
+      "types": "./dist/core/index.d.ts"
+    },
+    "./vanilla": {
+      "import": "./dist/vanilla/index.mjs",
+      "require": "./dist/vanilla/index.js",
+      "types": "./dist/vanilla/index.d.ts"
+    },
+    "./angular": {
+      "import": "./dist/angular/index.mjs",
+      "require": "./dist/angular/index.js",
+      "types": "./dist/angular/index.d.ts"
+    },
+    "./vue": {
+      "import": "./dist/vue/index.mjs",
+      "require": "./dist/vue/index.js",
+      "types": "./dist/vue/index.d.ts"
+    },
+    "./jquery": {
+      "import": "./dist/jquery/jquery.naxie.mjs",
+      "require": "./dist/jquery/jquery.naxie.js",
+      "types": "./dist/jquery/jquery.naxie.d.ts"
+    },
+    "./style.css": "./dist/style.css",
+    "./vanilla.css": "./dist/vanilla/style.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "vite build --watch",
-    "build": "tsc && vite build",
+    "build": "vite build",
     "type-check": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
@@ -30,13 +56,27 @@
     "react",
     "component",
     "websocket",
-    "markdown"
+    "markdown",
+    "framework-agnostic",
+    "angular",
+    "vue",
+    "jquery",
+    "vanilla-js",
+    "multi-framework"
   ],
   "author": "Cognax",
   "license": "MIT",
   "peerDependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -58,6 +98,7 @@
     "framer-motion": "^11.0.0",
     "katex": "^0.16.9",
     "lucide-react": "^0.344.0",
+    "marked": "^17.0.1",
     "react-loader-spinner": "^6.1.0",
     "react-markdown": "^9.0.0",
     "react-syntax-highlighter": "^15.5.0",
@@ -75,6 +116,7 @@
   "devDependencies": {
     "@types/hast": "^3.0.4",
     "@types/mdast": "^4.0.4",
+    "@types/node": "^25.0.3",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/react-syntax-highlighter": "^15.5.11",

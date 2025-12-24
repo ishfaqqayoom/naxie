@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naxie Vanilla | Premium AI Components</title>
+  <link rel="stylesheet" href="../dist-package/vanilla/naxie.css">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #6366f1;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .showcase {
+      max-width: 600px;
+      text-align: center;
+      background: var(--card);
+      padding: 3rem;
+      border-radius: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      margin-top: 0;
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      color: #94a3b8;
+      font-size: 1.125rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4f46e5;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="showcase">
+    <div class="badge">Framework Agnostic</div>
+    <h1>Naxie Vanilla</h1>
+    <p>
+      The core Naxie intelligence, delivered with 100% visual parity and zero framework dependencies.
+    </p>
+
+    <div class="cta-group">
+      <button class="btn btn-primary" onclick="window.naxie.open()">Open Assistant</button>
+    </div>
+  </div>
+
+  <div id="naxie-container"></div>
+
+  <script type="module">
+    import { NaxieVanilla, NaxieEvents } from '../dist-package/vanilla/naxie.mjs';
+
+    // Initialize Naxie
+    const chat = new NaxieVanilla(document.getElementById('naxie-container'), {
+      title: 'Cognax Assistant',
+      placeholder: 'Ask me anything...',
+      apiConfig: {
+        apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWRjMGQxMTktZmRhYi00OTBkLWI0NWItMDdkNTI1Mzc0MzEyIiwib3JnYW5pc2F0aW9uX2lkIjoiZDk2ZTliZWQtZTUxZS00NmY5LWEzZDYtYWY4YWQ5NDYyMWU5IiwiZW1haWwiOiJhZG1pbkBjb2duYXhkZXYuYWkiLCJyb2xlIjoiYWRtaW4iLCJwYXNzd29yZF9zdGF0dXMiOnRydWUsImV4cCI6MTc2NjY0MzUyOH0.AqzK_XtGdqw0axgIMO3qLn0uX1rgD0jWrBHlissyPzk',
+        baseUrl: 'https://dev-api.cognax.ai/api'
+      },
+      websocketConfig: {
+        endpoint: 'answer/ws',
+        baseUrl: 'wss://dev-api.cognax.ai/api'
+      },
+      defaultOpen: false,
+      showBubble: true
+    });
+
+    // Expose globally for the demo button
+    window.naxie = chat;
+
+    console.log('Naxie Premium initialized');
+  </script>
+</body>
+
+</html>
