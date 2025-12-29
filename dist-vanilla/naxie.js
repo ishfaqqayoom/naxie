@@ -144,7 +144,7 @@ stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
             <div class="naxie-upload-zone">
                 <div class="naxie-upload-icon" style="opacity:0.5">${b.UPLOAD}</div>
                 <p style="margin:0; font-weight:500; color:#1e293b">Upload Documents</p>
-                <p style="margin:5px 0 0; font-size:12px; color:#64748b">Support for PDF, TXT, and MD</p>
+                <p style="margin:5px 0 0; font-size:12px; color:#64748b">Supported formats: PDF, DOCX</p>
                 <input type="file" multiple style="display:none" class="naxie-file-input">
             </div>
             <div class="naxie-dialog-footer">

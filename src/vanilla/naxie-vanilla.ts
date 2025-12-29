@@ -20,8 +20,8 @@ const ICONS = {
   SEND: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>`,
   COPY: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`,
   REGEN: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>`,
-  WEB: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
-DEEP: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+  WEB: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`,
+DEEP: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none"
 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 <path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"/>
 <path d="m13.56 11.747 4.332-.924"/>
@@ -31,12 +31,12 @@ stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="r
 <path d="m8 21 3.105-6.21"/>
 <circle cx="12" cy="13" r="2"/>
 </svg>`,
-  SEARCH:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>`,
+  SEARCH:`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>`,
   NAXIE: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>`,
-  SPARKLES: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.91 5.89L20 10.8l-5.91 1.91L12 18.6l-1.91-5.89L4 10.8l5.91-1.91L12 3z"></path></svg>`,
-  SETTINGS: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
+  SPARKLES: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.91 5.89L20 10.8l-5.91 1.91L12 18.6l-1.91-5.89L4 10.8l5.91-1.91L12 3z"></path></svg>`,
+  SETTINGS: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>`,
   PLUS: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`,
-  UPLOAD: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`,
+  UPLOAD: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`,
   UNDO: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 6.7 6.7 0 0 0-5 2.5L3 13"></path></svg>`,
   USER: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
   FILE_MINUS: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>`
@@ -149,7 +149,7 @@ export class NaxieVanilla {
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--model" style="min-width: 80px;">
                   <span class="naxie-toggle-icon">${ICONS.SPARKLES}</span>
-                  <span class="naxie-model-name" style="max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${state.selectedModel}</span>
+                  <span class="naxie-model-name" style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;font-weight: 500;">${state.selectedModel}</span>
                 </button>
                 <div class="naxie-dropdown naxie-dropdown--models"></div>
               </div>
@@ -161,13 +161,13 @@ export class NaxieVanilla {
               </button>
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--more">
-                  <span class="naxie-toggle-icon">${ICONS.PLUS}</span>
+                  <span class="naxie-toggle-icon"  title="More Options">${ICONS.PLUS}</span>
                 </button>
                 <div class="naxie-dropdown naxie-dropdown--more">
-                    <div class="naxie-dropdown-label">Options</div>
+                    <div class="naxie-dropdown-label">Naxie Options</div>
                     <div class="naxie-dropdown-separator"></div>
                     <div class="naxie-dropdown-item naxie-item--upload">
-                        ${ICONS.UPLOAD} <span>Upload Document</span>
+                        ${ICONS.UPLOAD} <span>Instant Upload</span>
                     </div>
                 </div>
               </div>
@@ -176,7 +176,7 @@ export class NaxieVanilla {
             <div class="naxie-toolbar-group">
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--settings">
-                  <span class="naxie-toggle-icon">${ICONS.SETTINGS}</span>
+                  <span class="naxie-toggle-icon" title="Naxie Settings">${ICONS.SETTINGS}</span>
                 </button>
                 <div class="naxie-popover naxie-popover--settings">
                     <!-- Settings content injected here -->
@@ -191,19 +191,22 @@ export class NaxieVanilla {
       <div class="naxie-dialog-overlay naxie-upload-overlay">
         <div class="naxie-dialog">
             <div class="naxie-dialog-header">
-                <div class="naxie-dialog-title">Instant Upload</div>
-                <div class="naxie-dialog-desc">Inject context directly into the AI's memory.</div>
+                <div class="naxie-dialog-title">Upload Document</div>
+                <span class="naxie-dialog-close" style="cursor: pointer; font-size: 1.25rem; color: #64748b;">×</span>
             </div>
-            <div class="naxie-upload-zone">
+            <div class="naxie-dialog-body">
+               <div class="naxie-upload-zone">
                 <div class="naxie-upload-icon" style="opacity:0.5">${ICONS.UPLOAD}</div>
-                <p style="margin:0; font-weight:500; color:#1e293b">Upload Documents</p>
-                <p style="margin:5px 0 0; font-size:12px; color:#64748b">Support for PDF, TXT, and MD</p>
-                <input type="file" multiple style="display:none" class="naxie-file-input">
+                <p style="margin:0; font-weight:500;font-size:.75rem; color:#1e293b">Upload Document</p>
+                <p style="margin:5px 0 0; font-size:.75rem; color:#64748b">Supported formats: PDF, DOCX</p>
+                <input type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" class="naxie-file-input">
             </div>
+            <div class="naxie-file-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;"></div>
             <div class="naxie-dialog-footer">
                 <button class="naxie-btn-cancel">Cancel</button>
                 <button class="naxie-btn-confirm">Start Upload</button>
-            </div>
+            </div></div
+         
         </div>
       </div>
     `;
@@ -336,7 +339,7 @@ export class NaxieVanilla {
       const s = state.settings;
 
       container.innerHTML = `
-        <div style="display:grid; gap: 12px;">
+        <div style="display:grid;">
             <div>
                 <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">Domain</div>
                 <select class="naxie-select naxie-select--domain">
@@ -449,15 +452,89 @@ export class NaxieVanilla {
 
       const fileInput = overlay.querySelector('.naxie-file-input') as HTMLInputElement;
       const zone = overlay.querySelector('.naxie-upload-zone') as HTMLElement;
+      const fileListContainer = overlay.querySelector('.naxie-file-list') as HTMLElement;
       const confirmBtn = overlay.querySelector('.naxie-btn-confirm') as HTMLButtonElement;
       const cancelBtn = overlay.querySelector('.naxie-btn-cancel') as HTMLButtonElement;
+      const closeBtn = overlay.querySelector('.naxie-dialog-close') as HTMLElement;
+
+      // Disable confirm button by default
+      confirmBtn.disabled = true;
+
+      let selectedFiles: File[] = [];
+
+      // Function to render file list
+      const renderFileList = () => {
+          if (selectedFiles.length === 0) {
+              fileListContainer.innerHTML = '';
+              confirmBtn.disabled = true;
+              return;
+          }
+
+          fileListContainer.innerHTML = selectedFiles.map((file, index) => `
+              <div class="naxie-file-item" data-file-index="${index}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem; background: #f8fafc; border-radius: 0.375rem; margin-bottom: 0.5rem;">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0;">
+                      <span style="font-size: 0.75rem; color: #64748b;">${ICONS.FILE_MINUS}</span>
+                      <span style="font-size: 0.75rem; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
+                  </div>
+                  <button class="naxie-file-remove" data-file-index="${index}" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 0.25rem; display: flex; align-items: center; font-size: 1rem;" title="Remove file">×</button>
+              </div>
+          `).join('');
+
+          // Add click handlers for remove buttons
+          fileListContainer.querySelectorAll('.naxie-file-remove').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                  const index = parseInt((e.target as HTMLElement).getAttribute('data-file-index') || '0');
+                  selectedFiles.splice(index, 1);
+                  renderFileList();
+              });
+          });
+
+          confirmBtn.disabled = false;
+      };
+
+      // Reset function to clear file selection
+      const resetDialog = () => {
+          selectedFiles = [];
+          fileInput.value = '';
+          fileListContainer.innerHTML = '';
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Start Upload';
+          overlay.classList.remove('naxie-dialog-overlay--open');
+      };
 
       zone.onclick = () => fileInput.click();
       
-      let selectedFiles: File[] = [];
       fileInput.onchange = () => {
-          selectedFiles = Array.from(fileInput.files || []);
-          zone.querySelector('p')!.textContent = selectedFiles.length > 0 ? `${selectedFiles.length} files selected` : 'Click or drag files here to upload';
+          const newFiles = Array.from(fileInput.files || []);
+          
+          // Validate file types
+          const validFiles: File[] = [];
+          const invalidFiles: string[] = [];
+          
+          newFiles.forEach(file => {
+              const fileExtension = file.name.toLowerCase().split('.').pop();
+              const isValid = fileExtension === 'pdf' || fileExtension === 'docx';
+              
+              if (isValid) {
+                  validFiles.push(file);
+              } else {
+                  invalidFiles.push(file.name);
+              }
+          });
+          
+          // Show alert if there are invalid files
+          if (invalidFiles.length > 0) {
+              alert(`The following files are not supported:\n${invalidFiles.join('\n')}\n\nOnly PDF and DOCX files are allowed.`);
+          }
+          
+          // Add valid files to the selection
+          if (validFiles.length > 0) {
+              selectedFiles = [...selectedFiles, ...validFiles];
+              renderFileList();
+          }
+          
+          // Reset file input to allow selecting the same file again
+          fileInput.value = '';
       };
 
       confirmBtn.onclick = async () => {
@@ -466,16 +543,19 @@ export class NaxieVanilla {
           confirmBtn.textContent = 'Uploading...';
           try {
               await this.core.uploadFiles(selectedFiles);
-              overlay.classList.remove('naxie-dialog-overlay--open');
+              resetDialog(); // Reset after successful upload
           } catch (e) {
               alert('Upload failed: ' + e);
-          } finally {
               confirmBtn.disabled = false;
-              confirmBtn.textContent = 'Upload';
+              confirmBtn.textContent = 'Start Upload';
           }
       };
 
-      cancelBtn.onclick = () => overlay.classList.remove('naxie-dialog-overlay--open');
+      // Close modal on cancel button click
+      cancelBtn.onclick = () => resetDialog();
+      
+      // Close modal on close icon click
+      closeBtn.onclick = () => resetDialog();
   }
 
   private handleSubmit(): void {
@@ -522,9 +602,8 @@ export class NaxieVanilla {
     if (history.length === 0) {
       messagesContainer.innerHTML = `
         <div class="naxie-empty-state naxie-fade-in">
-          <div class="naxie-empty-icon">${ICONS.NAXIE}</div>
           <div class="naxie-empty-title">Welcome to Naxie</div>
-          <div class="naxie-empty-desc">Ask a question to start exploring your data directly from the dashboard.</div>
+          <div class="naxie-empty-desc">Ask a question to start exploring your data.</div>
         </div>
       `;
       return;
@@ -597,8 +676,8 @@ export class NaxieVanilla {
           footerEl.style.display = 'flex';
           footerEl.innerHTML = `
             <div class="naxie-message-actions">
-              <button class="naxie-action-btn naxie-btn-copy">${ICONS.COPY}</button>
-              <button class="naxie-action-btn naxie-btn-regen">${ICONS.REGEN}</button>
+              <button class="naxie-action-btn naxie-btn-copy" title='Copy'>${ICONS.COPY}</button>
+              <button class="naxie-action-btn naxie-btn-regen" title='Regenerate'>${ICONS.REGEN}</button>
             </div>
             <div class="naxie-refs-container"></div>
           `;
@@ -625,6 +704,15 @@ export class NaxieVanilla {
         }
       }
     });
+
+    // Remove loader if not loading
+    if (!state.isLoading) {
+      const loader = messagesContainer.querySelector('.naxie-message--loader');
+      if (loader) {
+        console.log('[Naxie Debug] Removing loader from UI');
+        messagesContainer.removeChild(loader);
+      }
+    }
 
     // Add loader if loading and not already present
     if (state.isLoading && !messagesContainer.querySelector('.naxie-message--loader')) {

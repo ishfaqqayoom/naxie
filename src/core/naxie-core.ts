@@ -169,32 +169,51 @@ export class NaxieCore {
   private handleIncomingMessage(data: any): void {
     let parsed: any = null;
     
+    // Debug logging
+    console.log('[Naxie Debug] Received message:', data);
+    
     try {
       if (typeof data === 'string') {
         const trimmed = data.trim();
         
         // Ignore pings
         if (trimmed.toLowerCase() === 'ping' || trimmed.toLowerCase() === 'pong') {
+          console.log('[Naxie Debug] Ignoring ping/pong');
           return;
         }
         
-        // Handle EOF (End of stream)
-        if (trimmed === 'EOF') {
+        // Handle EOF (End of stream) - check if EOF is present anywhere in the message
+        if (trimmed.includes('EOF')) {
+          console.log('[Naxie Debug] EOF detected! Stopping loader...');
+          // If there's content before EOF, process it first
+          const eofIndex = trimmed.indexOf('EOF');
+          if (eofIndex > 0) {
+            const contentBeforeEOF = trimmed.substring(0, eofIndex).trim();
+            if (contentBeforeEOF) {
+              console.log('[Naxie Debug] Processing content before EOF:', contentBeforeEOF);
+              this.handleTextChunk(contentBeforeEOF);
+            }
+          }
+          // Stop the loader
           this.stateManager.setState({ isLoading: false });
+          console.log('[Naxie Debug] Loader stopped, isLoading set to false');
           return;
         }
 
         // Try to parse JSON
         try {
           parsed = JSON.parse(data);
+          console.log('[Naxie Debug] Parsed JSON:', parsed);
           
           // Handle session_id initialization
           if (parsed && parsed.session_id && !this.stateManager.getState().sessionId) {
+            console.log('[Naxie Debug] Setting session_id:', parsed.session_id);
             this.stateManager.setState({ sessionId: parsed.session_id });
             return;
           }
         } catch {
           // Not JSON - treat as raw text chunk
+          console.log('[Naxie Debug] Not JSON, treating as text chunk');
           this.handleTextChunk(data);
           return;
         }
@@ -215,6 +234,11 @@ export class NaxieCore {
 
         this.stateManager.addMessage(aiMessage);
         this.eventEmitter.emit(NaxieEvents.MESSAGE_RECEIVED, aiMessage);
+        this.stateManager.setState({ isLoading: false });
+      } else if (parsed.refs !== undefined || parsed.web_search !== undefined) {
+        // Handle metadata messages (refs, web_search) that come after EOF
+        console.log('[Naxie Debug] Received metadata message, ensuring loader is off');
+        // These messages come after the response is complete, ensure loader stays off
         this.stateManager.setState({ isLoading: false });
       }
     } catch (error) {

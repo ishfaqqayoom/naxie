@@ -97,7 +97,8 @@
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid hsl(var(--naxie-border));
-    background: white;
+    background: hsl(var(--naxie-primary));
+    ;
 }
 
 .naxie-chat-title {
@@ -105,7 +106,7 @@
     font-size: 1rem;
     font-weight: 600;
     letter-spacing: -0.015em;
-    color: hsl(var(--naxie-foreground));
+    color: #fff
 }
 
 .naxie-chat-actions button {
@@ -113,15 +114,15 @@
     border: none;
     padding: 8px;
     cursor: pointer;
-    color: #94a3b8;
+    color: #fff;
     border-radius: 10px;
     display: flex;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .naxie-chat-actions button:hover {
-    background: #f1f5f9;
-    color: #1e293b;
+    /* background: #f1f5f9;
+    color: #1e293b; */
     transform: translateY(-1px);
 }
 
@@ -279,7 +280,7 @@
 .naxie-search-icon {
     position: absolute;
     left: 0.75rem;
-    top: 1rem;
+    top: 1.2rem;
     color: #94a3b8;
     pointer-events: none;
 }
@@ -292,7 +293,7 @@
     padding-right: 3rem;
     resize: none;
     outline: none;
-    font-size: 1rem;
+    /* font-size: 1rem; */
     color: #000;
     background: transparent;
     min-height: 56px;
@@ -357,8 +358,8 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: .5rem 1rem;
-    border-radius: .5rem;
+    padding: .25rem .5rem;
+    border-radius: .25rem;
     /* background: #64748b; */
     border: none;
     font-size: .8125rem;
@@ -454,7 +455,7 @@
 .naxie-dropdown-item {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
-    font-size: 0.875rem;
+    font-size: 0.675rem;
     color: #1e293b;
     cursor: pointer;
     transition: background 0.2s;
@@ -469,9 +470,9 @@
 
 .naxie-dropdown-label {
     padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    color: #64748b;
+    color: #000;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -484,32 +485,62 @@
 
 .naxie-select {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
+    padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+    border-radius: 0.5rem;
     border: 1.5px solid #e2e8f0;
-    background: #f8fafc;
-    font-size: 0.875rem;
+    background: white;
+    font-size: 0.75rem;
     font-weight: 500;
     color: #1e293b;
     outline: none;
-    margin-bottom: 1.25rem;
+    margin-bottom: 0.75rem;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 1rem center;
+    background-position: right 0.75rem center;
     background-size: 1rem;
-    box-shadow: var(--naxie-shadow-sm);
-    transition: all 0.2s;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.naxie-select:hover {
+    border-color: #cbd5e1;
+    background: #fafbfc;
 }
 
 .naxie-select:focus {
     border-color: hsl(var(--naxie-primary));
     background: white;
-    box-shadow: 0 0 0 2px hsla(var(--naxie-primary), 0.1);
+    box-shadow: 0 0 0 3px hsla(var(--naxie-primary), 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.naxie-select option {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.75rem;
+    color: #1e293b;
+    background: white;
+    font-weight: 500;
+}
+
+.naxie-select option:hover {
+    background: #f8fafc;
+}
+
+.naxie-select option:checked {
+    background: linear-gradient(0deg, hsl(var(--naxie-primary)) 0%, hsl(var(--naxie-primary)) 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.naxie-select option:disabled {
+    color: #94a3b8;
+    font-style: italic;
 }
 
 .naxie-select[multiple] {
     background-image: none;
+    padding: 0.5rem;
 }
 
 /* Slider Customization */
@@ -672,11 +703,15 @@
     background: white;
     width: 90%;
     max-width: 360px;
-    border-radius: 1.25rem;
-    padding: 1.5rem;
+    border-radius: .3rem;
+
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     transform: scale(0.9);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.naxie-dialog-body {
+    padding: 1.5rem;
 }
 
 .naxie-dialog-overlay--open .naxie-dialog {
@@ -684,14 +719,17 @@
 }
 
 .naxie-dialog-header {
-    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #f1f5f9;
 }
 
 .naxie-dialog-title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: .75rem;
     color: #0f172a;
-    margin-bottom: 0.25rem;
+
 }
 
 .naxie-dialog-desc {
@@ -721,10 +759,9 @@
 }
 
 .naxie-dialog-footer button {
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.3rem;
+    font-size: 0.65rem;
     cursor: pointer;
     transition: all 0.2s;
 }

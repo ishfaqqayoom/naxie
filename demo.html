@@ -38,18 +38,9 @@
 
     <div id="chat-container"></div>
 
-    <!-- 2. Import Map (Points to local dist files) -->
-    <script type="importmap">
-    {
-      "imports": {
-        "@ishfaqqayoom/naxie/vanilla": "./dist/vanilla/index.mjs"
-      }
-    }
-  </script>
-
-    <!-- 3. Initialize Naxie -->
+    <!-- 2. Initialize Naxie (Point to source for development) -->
     <script type="module">
-        import { NaxieVanilla } from '@ishfaqqayoom/naxie/vanilla';
+        import { NaxieVanilla } from './src/vanilla/index.ts';
 
         // Note: No apiConfig.baseUrl needed! Fallback will use websocketConfig.baseUrl
         const chat = new NaxieVanilla(
@@ -58,7 +49,8 @@
                 title: 'Cognax Assistant',
                 placeholder: 'Ask a question',
                 apiConfig: {
-                    apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWRjMGQxMTktZmRhYi00OTBkLWI0NWItMDdkNTI1Mzc0MzEyIiwib3JnYW5pc2F0aW9uX2lkIjoiZDk2ZTliZWQtZTUxZS00NmY5LWEzZDYtYWY4YWQ5NDYyMWU5IiwiZW1haWwiOiJhZG1pbkBjb2duYXhkZXYuYWkiLCJyb2xlIjoiYWRtaW4iLCJwYXNzd29yZF9zdGF0dXMiOnRydWUsImV4cCI6MTc2NjY0MzUyOH0.AqzK_XtGdqw0axgIMO3qLn0uX1rgD0jWrBHlissyPzk'
+                    apiKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWRjMGQxMTktZmRhYi00OTBkLWI0NWItMDdkNTI1Mzc0MzEyIiwib3JnYW5pc2F0aW9uX2lkIjoiZDk2ZTliZWQtZTUxZS00NmY5LWEzZDYtYWY4YWQ5NDYyMWU5IiwiZW1haWwiOiJhZG1pbkBjb2duYXhkZXYuYWkiLCJyb2xlIjoiYWRtaW4iLCJwYXNzd29yZF9zdGF0dXMiOnRydWUsImV4cCI6NDEwMjQ0NDc5OX0.apGRqjiP8wKaZ1QwUQR4gF0DQnhsLuSKWHqdpFn-ylI"
+
                 },
                 websocketConfig: {
                     baseUrl: 'wss://dev-api.cognax.ai/api',
