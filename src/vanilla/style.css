@@ -389,6 +389,7 @@
     bottom: calc(100% + 15px);
     right: 0;
     width: 320px;
+    max-width: 320px;
     background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(12px);
     border-radius: 1.25rem;
@@ -405,6 +406,7 @@
 .naxie-popover--settings {
     max-height: 400px;
     overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-width: thin;
 }
 
@@ -541,6 +543,113 @@
 .naxie-select[multiple] {
     background-image: none;
     padding: 0.5rem;
+}
+
+/* Custom Searchable Dropdowns */
+.naxie-custom-select-wrapper {
+    width: 100%;
+    max-width: 100%;
+}
+
+.naxie-custom-select {
+    width: 100%;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #e5e7eb;
+    background: white;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #374151;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+}
+
+.naxie-custom-select:hover {
+    border-color: #d1d5db;
+}
+
+.naxie-custom-select-value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #111827;
+}
+
+.naxie-custom-select-arrow {
+    display: flex;
+    align-items: center;
+    color: #9ca3af;
+    margin-left: 0.5rem;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+}
+
+.naxie-custom-options {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    max-height: 280px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.naxie-search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    outline: none;
+    font-size: 0.875rem;
+    color: #374151;
+    background: #f9fafb;
+}
+
+.naxie-search-input:focus {
+    background: white;
+    border-bottom-color: #e5e7eb;
+}
+
+.naxie-search-input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+.naxie-options-list {
+    overflow-y: auto;
+    max-height: 220px;
+    padding: 0.25rem 0;
+}
+
+.naxie-custom-option {
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    color: #111827;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    font-weight: 400;
+}
+
+.naxie-custom-option:hover {
+    background: #f3f4f6;
+}
+
+.naxie-custom-option:active {
+    background: #e5e7eb;
 }
 
 /* Slider Customization */

@@ -39,7 +39,8 @@ stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="r
   UPLOAD: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`,
   UNDO: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 6.7 6.7 0 0 0-5 2.5L3 13"></path></svg>`,
   USER: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
-  FILE_MINUS: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>`
+  FILE_MINUS: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>`,
+  CHEVRON_DOWN: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"></path></svg>`
 };
 
 export class NaxieVanilla {
@@ -149,7 +150,7 @@ export class NaxieVanilla {
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--model" style="min-width: 80px;">
                   <span class="naxie-toggle-icon">${ICONS.SPARKLES}</span>
-                  <span class="naxie-model-name" style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;font-weight: 500;">${state.selectedModel}</span>
+                  <span class="naxie-model-name" title="${state.selectedModel}" style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;font-weight: 500;">${state.selectedModel}</span>
                 </button>
                 <div class="naxie-dropdown naxie-dropdown--models"></div>
               </div>
@@ -339,24 +340,39 @@ export class NaxieVanilla {
       const s = state.settings;
 
       container.innerHTML = `
-        <div style="display:grid;">
-            <div>
+        <div style="display:flex; flex-direction:column;">
+            <!-- Domain Custom Dropdown -->
+            <div style="margin-bottom: 1rem;">
                 <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">Domain</div>
-                <select class="naxie-select naxie-select--domain">
-                    <option value="">Select Domain</option>
-                    ${this.settingsOptions.domains.map((d: any) => `<option value="${d.id}" ${s.domain?.id === d.id ? 'selected' : ''}>${d.name}</option>`).join('')}
-                </select>
+                <div class="naxie-custom-select-wrapper" style="position: relative;">
+                    <div class="naxie-custom-select" data-type="domain">
+                        <span class="naxie-custom-select-value" title="${s.domain?.name || 'Select Domain'}">${s.domain?.name || 'Select Domain'}</span>
+                        <span class="naxie-custom-select-arrow">${ICONS.CHEVRON_DOWN}</span>
+                    </div>
+                    <div class="naxie-custom-options" style="display: none;">
+                        <input type="text" class="naxie-search-input" placeholder="Search domains..." />
+                        <div class="naxie-options-list" data-type="domain"></div>
+                    </div>
+                </div>
             </div>
-            <div>
+            
+            <!-- Tags Custom Dropdown -->
+            <div style="margin-bottom: 1rem;">
                 <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">Tags</div>
-                <select class="naxie-select naxie-select--tags">
-                    <option value="">Select Tag</option>
-                    ${this.settingsOptions.tags.map((t: any) => `<option value="${t.id}">${t.name}</option>`).join('')}
-                </select>
+                <div class="naxie-custom-select-wrapper" style="position: relative;">
+                    <div class="naxie-custom-select" data-type="tags">
+                        <span class="naxie-custom-select-value">Select Tag</span>
+                        <span class="naxie-custom-select-arrow">${ICONS.CHEVRON_DOWN}</span>
+                    </div>
+                    <div class="naxie-custom-options" style="display: none;">
+                        <input type="text" class="naxie-search-input" placeholder="Search tags..." />
+                        <div class="naxie-options-list" data-type="tags"></div>
+                    </div>
+                </div>
                 ${s.tags.length > 0 ? `
                     <div class="naxie-tags-chips">
                         ${s.tags.map((tag: any) => `
-                            <div class="naxie-tag-chip" data-tag-id="${tag.id}">
+                            <div class="naxie-tag-chip" data-tag-id="${tag.id}" title="${tag.name}">
                                 <span>${tag.name}</span>
                                 <button class="naxie-tag-remove" data-tag-id="${tag.id}">${ICONS.CLOSE}</button>
                             </div>
@@ -364,54 +380,45 @@ export class NaxieVanilla {
                     </div>
                 ` : ''}
             </div>
+            
+            <!-- Sensitivity Slider -->
             <div class="naxie-slider-container">
                 <label class="naxie-slider-label">Sensitivity (${s.sensitivity}%)</label>
                 <input type="range" class="naxie-slider naxie-slider--sensitivity" min="0" max="100" value="${s.sensitivity}">
             </div>
-            <div>
+            
+            <!-- Prompt Custom Dropdown -->
+            <div style="margin-bottom: 1rem;">
                 <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">System Prompt</div>
-                <select class="naxie-select naxie-select--prompt">
-                    <option value="">Default Prompt</option>
-                    ${this.settingsOptions.prompts.map((p: any) => `<option value="${p.id}" ${s.prompt === p.id ? 'selected' : ''}>${p.title || p.name}</option>`).join('')}
-                </select>
+                <div class="naxie-custom-select-wrapper" style="position: relative;">
+                    <div class="naxie-custom-select" data-type="prompt">
+                        <span class="naxie-custom-select-value" title="${s.prompt ? (this.settingsOptions.prompts.find((p: any) => p.id === s.prompt)?.title || 'Default Prompt') : 'Default Prompt'}">${s.prompt ? (this.settingsOptions.prompts.find((p: any) => p.id === s.prompt)?.title || 'Default Prompt') : 'Default Prompt'}</span>
+                        <span class="naxie-custom-select-arrow">${ICONS.CHEVRON_DOWN}</span>
+                    </div>
+                    <div class="naxie-custom-options" style="display: none;">
+                        <input type="text" class="naxie-search-input" placeholder="Search prompts..." />
+                        <div class="naxie-options-list" data-type="prompt"></div>
+                    </div>
+                </div>
             </div>
+            
             <button class="naxie-btn-footer naxie-btn-outline naxie-btn--reset">
                 ${ICONS.UNDO} Reset Settings
             </button>
         </div>
       `;
 
-      // Wire up settling listeners
+      // Initialize custom dropdowns
+      this.initCustomDropdown(container, 'domain', this.settingsOptions.domains);
+      this.initCustomDropdown(container, 'tags', this.settingsOptions.tags);
+      this.initCustomDropdown(container, 'prompt', this.settingsOptions.prompts);
+
+      // Wire up sensitivity slider
       const sensitivity = container.querySelector('.naxie-slider--sensitivity') as HTMLInputElement;
       sensitivity.oninput = () => {
           const val = parseInt(sensitivity.value);
           container.querySelector('.naxie-slider-label')!.textContent = `Sensitivity (${val}%)`;
           this.updateSettings({ sensitivity: val });
-      };
-
-      const domainSelect = container.querySelector('.naxie-select--domain') as HTMLSelectElement;
-      domainSelect.onchange = () => {
-          const id = domainSelect.value;
-          const d = this.settingsOptions.domains.find((d: any) => d.id === id);
-          this.updateSettings({ domain: d });
-      };
-
-      const tagsSelect = container.querySelector('.naxie-select--tags') as HTMLSelectElement;
-      tagsSelect.onchange = () => {
-          const tagId = tagsSelect.value;
-          if (!tagId) return;
-
-          const tag = this.settingsOptions.tags.find((t: any) => t.id === tagId);
-          const currentTags = this.core.getState().settings.tags;
-          
-          if (tag && !currentTags.find((t: any) => t.id === tagId)) {
-              this.updateSettings({ tags: [...currentTags, tag] });
-              // Re-render to show updated chips
-              this.renderSettings(container);
-          }
-          
-          // Reset select to placeholder
-          tagsSelect.value = "";
       };
 
       // Handle tag chip removal
@@ -426,11 +433,7 @@ export class NaxieVanilla {
           });
       });
 
-      const promptSelect = container.querySelector('.naxie-select--prompt') as HTMLSelectElement;
-      promptSelect.onchange = () => {
-          this.updateSettings({ prompt: promptSelect.value });
-      };
-
+      // Reset button
       container.querySelector('.naxie-btn--reset')?.addEventListener('click', () => {
           this.updateSettings({
               domain: undefined,
@@ -439,6 +442,92 @@ export class NaxieVanilla {
               prompt: ''
           });
           this.renderSettings(container);
+      });
+  }
+
+  private initCustomDropdown(container: HTMLElement, type: string, options: any[]) {
+      const wrapper = container.querySelector(`.naxie-custom-select[data-type="${type}"]`)?.parentElement;
+      if (!wrapper) return;
+
+      const selectBtn = wrapper.querySelector('.naxie-custom-select') as HTMLElement;
+      const optionsContainer = wrapper.querySelector('.naxie-custom-options') as HTMLElement;
+      const searchInput = optionsContainer.querySelector('.naxie-search-input') as HTMLInputElement;
+      const optionsList = optionsContainer.querySelector('.naxie-options-list') as HTMLElement;
+
+      // Render options
+      const renderOptions = (filter: string = '') => {
+          const filtered = options.filter((opt: any) => {
+              const name = opt.name || opt.title || '';
+              return name.toLowerCase().includes(filter.toLowerCase());
+          });
+
+          optionsList.innerHTML = filtered.map((opt: any) => `
+              <div class="naxie-custom-option" data-id="${opt.id}" data-name="${opt.name || opt.title}">
+                  ${opt.name || opt.title}
+              </div>
+          `).join('');
+
+          // Add click handlers
+          optionsList.querySelectorAll('.naxie-custom-option').forEach(opt => {
+              opt.addEventListener('click', () => {
+                  const id = (opt as HTMLElement).dataset.id;
+                  const name = (opt as HTMLElement).dataset.name;
+                  const selected = options.find((o: any) => o.id === id);
+
+                  if (type === 'domain') {
+                      this.updateSettings({ domain: selected });
+                      const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
+                      valEl.textContent = name || 'Select Domain';
+                      valEl.title = name || 'Select Domain';
+                  } else if (type === 'tags') {
+                      const currentTags = this.core.getState().settings.tags;
+                      if (selected && !currentTags.find((t: any) => t.id === id)) {
+                          this.updateSettings({ tags: [...currentTags, selected] });
+                          this.renderSettings(container);
+                      }
+                  } else if (type === 'prompt') {
+                      this.updateSettings({ prompt: id });
+                      const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
+                      valEl.textContent = name || 'Default Prompt';
+                      valEl.title = name || 'Default Prompt';
+                  }
+
+                  optionsContainer.style.display = 'none';
+                  searchInput.value = '';
+              });
+          });
+      };
+
+      // Toggle dropdown
+      selectBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = optionsContainer.style.display === 'block';
+          
+          // Close all other dropdowns
+          container.querySelectorAll('.naxie-custom-options').forEach(opt => {
+              (opt as HTMLElement).style.display = 'none';
+          });
+
+          optionsContainer.style.display = isOpen ? 'none' : 'block';
+          if (!isOpen) {
+              renderOptions();
+              searchInput.focus();
+          }
+      });
+
+      // Search functionality
+      searchInput.addEventListener('input', () => {
+          renderOptions(searchInput.value);
+      });
+
+      // Prevent closing when clicking inside options
+      optionsContainer.addEventListener('click', (e) => {
+          e.stopPropagation();
+      });
+
+      // Close on outside click
+      document.addEventListener('click', () => {
+          optionsContainer.style.display = 'none';
       });
   }
 
