@@ -165,10 +165,11 @@
     justify-content: center;
     flex-shrink: 0;
     overflow: hidden;
+    background-color: #e1e7ef;
 }
 
 .naxie-avatar--user {
-    background: hsl(var(--naxie-secondary));
+    /* background: hsl(var(--naxie-secondary)); */
     color: #4318FF;
 }
 
@@ -206,8 +207,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    /* margin-top: 0.5rem; */
+    /* padding-top: 0.5rem; */
     border-top: 1px solid hsl(var(--naxie-muted));
 }
 

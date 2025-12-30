@@ -176,11 +176,6 @@ export class NaxieCore {
       if (typeof data === 'string') {
         const trimmed = data.trim();
         
-        // Ignore pings
-        if (trimmed.toLowerCase() === 'ping' || trimmed.toLowerCase() === 'pong') {
-          console.log('[Naxie Debug] Ignoring ping/pong');
-          return;
-        }
         
         // Handle EOF (End of stream) - check if EOF is present anywhere in the message
         if (trimmed.includes('EOF')) {
@@ -211,6 +206,15 @@ export class NaxieCore {
             this.stateManager.setState({ sessionId: parsed.session_id });
             return;
           }
+
+          // Handle keepalive
+          // if (parsed && parsed.type === 'keepalive') {
+          //   console.log('[Naxie Debug] Received keepalive, sending response');
+          //   if (this.wsService && this.wsService.isOpen()) {
+          //     this.wsService.send({ type: 'keepalive' });
+          //   }
+          //   return;
+          // }
         } catch {
           // Not JSON - treat as raw text chunk
           console.log('[Naxie Debug] Not JSON, treating as text chunk');

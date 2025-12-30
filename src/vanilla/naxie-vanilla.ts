@@ -1,5 +1,6 @@
 import { NaxieCore, NaxieCoreConfig, NaxieEvents } from '../core';
 import { marked } from 'marked';
+import Ask1 from '../assets/images/Ask1.png';
 
 /**
  * Vanilla JavaScript implementation of Naxie
@@ -726,12 +727,12 @@ export class NaxieVanilla {
           msgEl.innerHTML = `
             <div class="naxie-avatar naxie-avatar--user">${ICONS.USER}</div>
             <div class="naxie-message-container">
-              <div class="naxie-message-content" style="font-weight: 500;">${msg.content}</div>
+              <div class="naxie-message-content" style="font-weight: 500;background-color: #e1e7ef;">${msg.content}</div>
             </div>
           `;
         } else {
           msgEl.innerHTML = `
-            <div class="naxie-avatar naxie-avatar--assistant">${ICONS.NAXIE}</div>
+            <div class="naxie-avatar naxie-avatar--assistant"><img src="${Ask1}" alt="Naxie AI" style="width: 100%; height: 100%;"></div>
             <div class="naxie-message-container">
               <div class="naxie-message-content" id="msg-content-${index}"></div>
               <div class="naxie-message-footer" id="msg-footer-${index}" style="display:none"></div>
@@ -808,7 +809,7 @@ export class NaxieVanilla {
       const loader = document.createElement('div');
       loader.className = 'naxie-message-wrapper naxie-message--assistant-wrapper naxie-message--loader';
       loader.innerHTML = `
-        <div class="naxie-avatar naxie-avatar--assistant">${ICONS.NAXIE}</div>
+        <div class="naxie-avatar naxie-avatar--assistant"><img src="${Ask1}" alt="Naxie AI" style="width: 100%; height: 100%;"></div>
         <div class="naxie-message-container">
            <div class="naxie-typing">
             <div class="naxie-dot"></div>
