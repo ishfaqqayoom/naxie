@@ -202,8 +202,8 @@ export class NaxieVanilla {
             <div class="naxie-dialog-body">
                <div class="naxie-upload-zone">
                 <div class="naxie-upload-icon" style="opacity:0.5">${ICONS.UPLOAD}</div>
-                <p style="margin:0; font-weight:500;font-size:.75rem; color:#1e293b">Upload Document</p>
-                <p style="margin:5px 0 0; font-size:.75rem; color:#64748b">Supported formats: PDF, DOCX</p>
+                <p style="margin:0; font-weight:500;font-size:.85rem; color:#1e293b">Upload Document</p>
+                <p style="margin:5px 0 0; font-size:.85rem; color:#64748b">Supported formats: PDF, DOCX</p>
                 <input type="file" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" class="naxie-file-input">
             </div>
             <div class="naxie-file-list" style="margin-top: 1rem; max-height: 200px; overflow-y: auto;"></div>

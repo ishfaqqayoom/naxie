@@ -1,6 +1,6 @@
 {
   "name": "@ishfaqqayoom/naxie",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "access": "public",
   "description": "Framework-agnostic AI chat component - works with React, Angular, Vue, jQuery, vanilla JavaScript, and more",
   "main": "./dist/index.cjs",

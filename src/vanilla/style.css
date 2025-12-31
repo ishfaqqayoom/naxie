@@ -432,7 +432,7 @@
     overflow-y: auto;
     background: white;
     border: 1px solid #e2e8f0;
-    border-radius: 1rem;
+    border-radius: .5rem;
     box-shadow: var(--naxie-shadow-lg);
     padding: 0.5rem;
     z-index: 101;
@@ -459,7 +459,7 @@
 .naxie-dropdown-item {
     padding: 0.625rem 0.75rem;
     border-radius: 0.5rem;
-    font-size: 0.675rem;
+    font-size: 0.875rem;
     color: #1e293b;
     cursor: pointer;
     transition: background 0.2s;
@@ -474,7 +474,7 @@
 
 .naxie-dropdown-label {
     padding: 0.5rem 0.75rem;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: #000;
     text-transform: uppercase;
@@ -814,7 +814,7 @@
     background: white;
     width: 90%;
     max-width: 360px;
-    border-radius: .3rem;
+    border-radius: .5rem;
 
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     transform: scale(0.9);
@@ -835,11 +835,14 @@
     align-items: center;
     padding: 1rem;
     background-color: #f1f5f9;
+    border-top-right-radius: .5rem;
+    border-top-left-radius: .5rem;
 }
 
 .naxie-dialog-title {
-    font-size: .75rem;
+    font-size: 1rem;
     color: #0f172a;
+    font-weight: 600;
 
 }
 
@@ -850,7 +853,7 @@
 
 .naxie-upload-zone {
     border: 2px dashed #e2e8f0;
-    border-radius: 1rem;
+    border-radius: .5rem;
     padding: 2rem 1rem;
     text-align: center;
     cursor: pointer;
@@ -872,7 +875,7 @@
 .naxie-dialog-footer button {
     padding: 0.5rem 1rem;
     border-radius: 0.3rem;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -881,12 +884,14 @@
     background: white;
     border: 1px solid #e2e8f0;
     color: #64748b;
+    font-size: 0.85rem;
 }
 
 .naxie-btn-confirm {
-    background: #6366f1;
+    background: #4f46e5;
     border: none;
     color: white;
+    font-size: .75rem;
 }
 
 .naxie-btn-confirm:hover {
