@@ -294,7 +294,7 @@
     padding-right: 3rem;
     resize: none;
     outline: none;
-    /* font-size: 1rem; */
+    font-size: 1rem;
     color: #000;
     background: transparent;
     min-height: 56px;
@@ -322,9 +322,10 @@
 }
 
 .naxie-btn-send:disabled {
-    background: #f1f5f9;
+    background: #e2e8f0;
     color: #94a3b8;
     cursor: not-allowed;
+    opacity: 0.8;
 }
 
 /* Toolbar Controls */
@@ -365,7 +366,7 @@
     border: none;
     font-size: .8125rem;
     font-weight: 600;
-    color: #64748b;
+    color: #0f172a;
     cursor: pointer;
     transition: all .3s cubic-bezier(.4, 0, .2, 1);
 }
@@ -373,7 +374,7 @@
 .naxie-toggle:hover {
     border-color: #cbd5e1;
     background: #f8fafc;
-    color: #0f172a;
+
     transform: translateY(-1px);
 }
 
@@ -1013,4 +1014,29 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Custom Tooltip */
+.naxie-tooltip {
+    position: fixed;
+    background: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1e293b;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    border: 1px solid #e2e8f0;
+    font-weight: 500;
+    max-width: 250px;
+    text-align: center;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.naxie-tooltip--visible {
+    opacity: 1;
 }

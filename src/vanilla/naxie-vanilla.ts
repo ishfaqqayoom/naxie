@@ -41,7 +41,8 @@ stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="r
   UNDO: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 6.7 6.7 0 0 0-5 2.5L3 13"></path></svg>`,
   USER: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
   FILE_MINUS: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="9" y1="15" x2="15" y2="15"></line></svg>`,
-  CHEVRON_DOWN: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"></path></svg>`
+  CHEVRON_DOWN: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"></path></svg>`,
+  CHECK: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`
 };
 
 export class NaxieVanilla {
@@ -50,6 +51,7 @@ export class NaxieVanilla {
   private options: NaxieVanillaOptions;
   private chatWindow: HTMLElement | null = null;
   private chatBubble: HTMLElement | null = null;
+  private tooltip: HTMLElement | null = null;
   
   // Cache for options
   private availableModels: any[] = [];
@@ -78,6 +80,7 @@ export class NaxieVanilla {
     this.core = new NaxieCore(options);
     this.render();
     this.setupEventListeners();
+    this.setupTooltips();
 
     if (options.websocketConfig) {
       this.core.connect();
@@ -124,8 +127,8 @@ export class NaxieVanilla {
       <div class="naxie-chat-header">
         <h3 class="naxie-chat-title">${this.options.title}</h3>
         <div class="naxie-chat-actions" style="display:flex">
-          <button class="naxie-btn-maximize" title="Maximize">${ICONS.MAXIMIZE}</button>
-          <button class="naxie-btn-close" title="Close">${ICONS.CLOSE}</button>
+          <button class="naxie-btn-maximize" data-tooltip="Maximize">${ICONS.MAXIMIZE}</button>
+          <button class="naxie-btn-close" data-tooltip="Close">${ICONS.CLOSE}</button>
         </div>
       </div>
       <div class="naxie-chat-body">
@@ -141,7 +144,7 @@ export class NaxieVanilla {
               rows="1"
             ></textarea>
             <div class="naxie-send-wrapper">
-              <button class="naxie-btn-send" title="Send message">
+              <button class="naxie-btn-send" data-tooltip="Send message" disabled>
                 ${ICONS.SEND}
               </button>
             </div>
@@ -151,19 +154,19 @@ export class NaxieVanilla {
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--model" style="min-width: 80px;">
                   <span class="naxie-toggle-icon">${ICONS.SPARKLES}</span>
-                  <span class="naxie-model-name" title="${state.selectedModel}" style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;font-weight: 500;">${state.selectedModel}</span>
+                  <span class="naxie-model-name" data-tooltip="${state.selectedModel}" style="max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;font-weight: 500;">${state.selectedModel}</span>
                 </button>
                 <div class="naxie-dropdown naxie-dropdown--models"></div>
               </div>
-              <button class="naxie-toggle naxie-toggle--web" title="Web Search">
+              <button class="naxie-toggle naxie-toggle--web" data-tooltip="Web Search is OFF">
                 <span class="naxie-toggle-icon">${ICONS.WEB}</span>
               </button>
-              <button class="naxie-toggle naxie-toggle--deep" title="Deep Search">
+              <button class="naxie-toggle naxie-toggle--deep" data-tooltip="Deep Search is OFF">
                 <span class="naxie-toggle-icon">${ICONS.DEEP}</span>
               </button>
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--more">
-                  <span class="naxie-toggle-icon"  title="More Options">${ICONS.PLUS}</span>
+                  <span class="naxie-toggle-icon"  data-tooltip="More Options">${ICONS.PLUS}</span>
                 </button>
                 <div class="naxie-dropdown naxie-dropdown--more">
                     <div class="naxie-dropdown-label">Naxie Options</div>
@@ -178,7 +181,7 @@ export class NaxieVanilla {
             <div class="naxie-toolbar-group">
               <div class="naxie-popover-anchor" style="position:relative">
                 <button class="naxie-toggle naxie-toggle--settings">
-                  <span class="naxie-toggle-icon" title="Naxie Settings">${ICONS.SETTINGS}</span>
+                  <span class="naxie-toggle-icon" data-tooltip="Naxie Settings">${ICONS.SETTINGS}</span>
                 </button>
                 <div class="naxie-popover naxie-popover--settings">
                     <!-- Settings content injected here -->
@@ -228,12 +231,16 @@ export class NaxieVanilla {
     webToggle?.addEventListener('click', () => {
       this.webSearch = !this.webSearch;
       webToggle.classList.toggle('naxie-toggle--active', this.webSearch);
+      webToggle.setAttribute('data-tooltip', `Web Search is ${this.webSearch ? 'ON' : 'OFF'}`);
+      this.updateTooltip(webToggle as HTMLElement);
     });
 
     const deepToggle = this.chatWindow.querySelector('.naxie-toggle--deep');
     deepToggle?.addEventListener('click', () => {
       this.deepSearch = !this.deepSearch;
       deepToggle.classList.toggle('naxie-toggle--active', this.deepSearch);
+      deepToggle.setAttribute('data-tooltip', `Deep Search is ${this.deepSearch ? 'ON' : 'OFF'}`);
+      this.updateTooltip(deepToggle as HTMLElement);
     });
 
     // Model Dropdown
@@ -286,6 +293,9 @@ export class NaxieVanilla {
     textarea?.addEventListener('input', () => {
       textarea.style.height = 'auto';
       textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+      
+      const isEmpty = textarea.value.trim().length === 0;
+      sendBtn.disabled = isEmpty;
     });
 
     textarea?.addEventListener('keydown', (e) => {
@@ -347,7 +357,7 @@ export class NaxieVanilla {
                 <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">Domain</div>
                 <div class="naxie-custom-select-wrapper" style="position: relative;">
                     <div class="naxie-custom-select" data-type="domain">
-                        <span class="naxie-custom-select-value" title="${s.domain?.name || 'Select Domain'}">${s.domain?.name || 'Select Domain'}</span>
+                        <span class="naxie-custom-select-value" data-tooltip="${s.domain?.name || 'Select Domain'}">${s.domain?.name || 'Select Domain'}</span>
                         <span class="naxie-custom-select-arrow">${ICONS.CHEVRON_DOWN}</span>
                     </div>
                     <div class="naxie-custom-options" style="display: none;">
@@ -370,16 +380,7 @@ export class NaxieVanilla {
                         <div class="naxie-options-list" data-type="tags"></div>
                     </div>
                 </div>
-                ${s.tags.length > 0 ? `
-                    <div class="naxie-tags-chips">
-                        ${s.tags.map((tag: any) => `
-                            <div class="naxie-tag-chip" data-tag-id="${tag.id}" title="${tag.name}">
-                                <span>${tag.name}</span>
-                                <button class="naxie-tag-remove" data-tag-id="${tag.id}">${ICONS.CLOSE}</button>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
+                <div class="naxie-tags-chips-wrapper"></div>
             </div>
             
             <!-- Sensitivity Slider -->
@@ -393,7 +394,7 @@ export class NaxieVanilla {
                 <div class="naxie-dropdown-label" style="padding:0; margin-bottom:5px;">System Prompt</div>
                 <div class="naxie-custom-select-wrapper" style="position: relative;">
                     <div class="naxie-custom-select" data-type="prompt">
-                        <span class="naxie-custom-select-value" title="${s.prompt ? (this.settingsOptions.prompts.find((p: any) => p.id === s.prompt)?.title || 'Default Prompt') : 'Default Prompt'}">${s.prompt ? (this.settingsOptions.prompts.find((p: any) => p.id === s.prompt)?.title || 'Default Prompt') : 'Default Prompt'}</span>
+                        <span class="naxie-custom-select-value" data-tooltip="${s.prompt ? (this.settingsOptions.prompts.find((p: any) => p.id === s.prompt)?.title || 'Default Prompt') : 'Default Prompt'}">${s.prompt ? (this.settingsOptions.prompts.find((p: any) => p.id === s.prompt)?.title || 'Default Prompt') : 'Default Prompt'}</span>
                         <span class="naxie-custom-select-arrow">${ICONS.CHEVRON_DOWN}</span>
                     </div>
                     <div class="naxie-custom-options" style="display: none;">
@@ -422,17 +423,8 @@ export class NaxieVanilla {
           this.updateSettings({ sensitivity: val });
       };
 
-      // Handle tag chip removal
-      container.querySelectorAll('.naxie-tag-remove').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              const tagId = (btn as HTMLElement).dataset.tagId;
-              const currentState = this.core.getState().settings;
-              const newTags = currentState.tags.filter((t: any) => t.id !== tagId);
-              this.updateSettings({ tags: newTags });
-              this.renderSettings(container);
-          });
-      });
+      // Render chips
+      this.renderTagChips(container);
 
       // Reset button
       container.querySelector('.naxie-btn--reset')?.addEventListener('click', () => {
@@ -446,8 +438,48 @@ export class NaxieVanilla {
       });
   }
 
-  private initCustomDropdown(container: HTMLElement, type: string, options: any[]) {
-      const wrapper = container.querySelector(`.naxie-custom-select[data-type="${type}"]`)?.parentElement;
+  private renderTagChips(container: HTMLElement) {
+      const s = this.core.getState().settings;
+      const wrapper = container.querySelector('.naxie-tags-chips-wrapper') as HTMLElement;
+      if (!wrapper) return;
+
+      if (!s.tags || s.tags.length === 0) {
+          wrapper.innerHTML = '';
+          return;
+      }
+
+      wrapper.innerHTML = `
+          <div class="naxie-tags-chips">
+              ${s.tags.map((tag: any) => `
+                  <div class="naxie-tag-chip" data-tag-id="${tag.id}" data-tooltip="${tag.name}">
+                      <span>${tag.name}</span>
+                      <button class="naxie-tag-remove" data-tag-id="${tag.id}">${ICONS.CLOSE}</button>
+                  </div>
+              `).join('')}
+          </div>
+      `;
+
+      wrapper.querySelectorAll('.naxie-tag-remove').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const tagId = (btn as HTMLElement).dataset.tagId;
+              const currentState = this.core.getState().settings;
+              const newTags = currentState.tags.filter((t: any) => t.id !== tagId);
+              this.updateSettings({ tags: newTags });
+              this.renderTagChips(container);
+              
+               const tagsWrapper = container.querySelector('.naxie-custom-select[data-type="tags"]')?.parentElement as HTMLElement;
+              if (tagsWrapper) {
+                 const searchInput = tagsWrapper.querySelector('.naxie-search-input') as HTMLInputElement;
+                 if (searchInput) searchInput.dispatchEvent(new Event('input'));
+              }
+          });
+      });
+      this.setupTooltips(wrapper);
+  }
+
+   private initCustomDropdown(container: HTMLElement, type: string, options: any[]) {
+      const wrapper = container.querySelector(`.naxie-custom-select[data-type="${type}"]`)?.parentElement as HTMLElement;
       if (!wrapper) return;
 
       const selectBtn = wrapper.querySelector('.naxie-custom-select') as HTMLElement;
@@ -462,11 +494,25 @@ export class NaxieVanilla {
               return name.toLowerCase().includes(filter.toLowerCase());
           });
 
-          optionsList.innerHTML = filtered.map((opt: any) => `
-              <div class="naxie-custom-option" data-id="${opt.id}" data-name="${opt.name || opt.title}">
-                  ${opt.name || opt.title}
+          optionsList.innerHTML = filtered.map((opt: any) => {
+              let isSelected = false;
+              if (type === 'domain') {
+                  const currentDomain = this.core.getState().settings.domain;
+                  isSelected = currentDomain?.id === opt.id;
+              } else if (type === 'tags') {
+                  const currentTags = this.core.getState().settings.tags || [];
+                  isSelected = currentTags.some((t: any) => t.id === opt.id);
+              } else if (type === 'prompt') {
+                  const currentPrompt = this.core.getState().settings.prompt;
+                  isSelected = currentPrompt === opt.id;
+              }
+
+              return `
+              <div class="naxie-custom-option" data-id="${opt.id}" data-name="${opt.name || opt.title}" style="display:flex; align-items:center; justify-content:space-between;">
+                  <span>${opt.name || opt.title}</span>
+                  ${isSelected ? `<span style="color:#0f172a;">${ICONS.CHECK}</span>` : ''}
               </div>
-          `).join('');
+          `}).join('');
 
           // Add click handlers
           optionsList.querySelectorAll('.naxie-custom-option').forEach(opt => {
@@ -476,27 +522,54 @@ export class NaxieVanilla {
                   const selected = options.find((o: any) => o.id === id);
 
                   if (type === 'domain') {
-                      this.updateSettings({ domain: selected });
-                      const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
-                      valEl.textContent = name || 'Select Domain';
-                      valEl.title = name || 'Select Domain';
-                  } else if (type === 'tags') {
-                      const currentTags = this.core.getState().settings.tags;
-                      if (selected && !currentTags.find((t: any) => t.id === id)) {
-                          this.updateSettings({ tags: [...currentTags, selected] });
-                          this.renderSettings(container);
+                      const currentDomain = this.core.getState().settings.domain;
+                      if (currentDomain?.id === id) {
+                          // Deselect
+                          this.updateSettings({ domain: undefined });
+                          const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
+                          valEl.textContent = 'Select Domain';
+                          valEl.setAttribute('data-tooltip', 'Select Domain');
+                      } else {
+                          // Select
+                          this.updateSettings({ domain: selected });
+                          const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
+                          valEl.textContent = name || 'Select Domain';
+                          valEl.setAttribute('data-tooltip', name || 'Select Domain');
                       }
+                  } else if (type === 'tags') {
+                      const currentTags = this.core.getState().settings.tags || [];
+                      const exists = currentTags.find((t: any) => t.id === id);
+                      
+                      if (exists) {
+                          // Deselect tag
+                          this.updateSettings({ tags: currentTags.filter((t: any) => t.id !== id) });
+                      } else if (selected) {
+                          // Select tag
+                          this.updateSettings({ tags: [...currentTags, selected] });
+                      }
+                      this.renderTagChips(container);
                   } else if (type === 'prompt') {
-                      this.updateSettings({ prompt: id });
-                      const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
-                      valEl.textContent = name || 'Default Prompt';
-                      valEl.title = name || 'Default Prompt';
+                      const currentPrompt = this.core.getState().settings.prompt;
+                      if (currentPrompt === id) {
+                          // Deselect
+                          this.updateSettings({ prompt: '' });
+                          const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
+                          valEl.textContent = 'Default Prompt';
+                          valEl.setAttribute('data-tooltip', 'Default Prompt');
+                      } else {
+                          // Select
+                          this.updateSettings({ prompt: id });
+                          const valEl = selectBtn.querySelector('.naxie-custom-select-value') as HTMLElement;
+                          valEl.textContent = name || 'Default Prompt';
+                          valEl.setAttribute('data-tooltip', name || 'Default Prompt');
+                      }
                   }
 
-                  optionsContainer.style.display = 'none';
-                  searchInput.value = '';
+                  // Always keep open and re-render to update checks
+                  renderOptions(searchInput.value);
               });
           });
+          this.setupTooltips(optionsList);
       };
 
       // Toggle dropdown
@@ -530,6 +603,7 @@ export class NaxieVanilla {
       document.addEventListener('click', () => {
           optionsContainer.style.display = 'none';
       });
+      this.setupTooltips(selectBtn);
   }
 
   private updateSettings(partial: any) {
@@ -566,7 +640,7 @@ export class NaxieVanilla {
                       <span style="font-size: 0.75rem; color: #64748b;">${ICONS.FILE_MINUS}</span>
                       <span style="font-size: 0.75rem; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${file.name}</span>
                   </div>
-                  <button class="naxie-file-remove" data-file-index="${index}" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 0.25rem; display: flex; align-items: center; font-size: 1rem;" title="Remove file">×</button>
+                  <button class="naxie-file-remove" data-file-index="${index}" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 0.25rem; display: flex; align-items: center; font-size: 1rem;" data-tooltip="Remove file">×</button>
               </div>
           `).join('');
 
@@ -580,6 +654,7 @@ export class NaxieVanilla {
           });
 
           confirmBtn.disabled = false;
+          this.setupTooltips(fileListContainer);
       };
 
       // Reset function to clear file selection
@@ -679,6 +754,8 @@ export class NaxieVanilla {
     if (textarea) {
       textarea.value = '';
       textarea.style.height = 'auto';
+      const sendBtn = this.chatWindow?.querySelector('.naxie-btn-send') as HTMLButtonElement;
+      if (sendBtn) sendBtn.disabled = true;
     }
   }
 
@@ -691,7 +768,7 @@ export class NaxieVanilla {
 
     if (history.length === 0) {
       messagesContainer.innerHTML = `
-        <div class="naxie-empty-state naxie-fade-in">
+        <div class="naxie-empty-state">
           <div class="naxie-empty-title">Welcome to Naxie</div>
           <div class="naxie-empty-desc">Ask a question to start exploring your data.</div>
         </div>
@@ -766,8 +843,8 @@ export class NaxieVanilla {
           footerEl.style.display = 'flex';
           footerEl.innerHTML = `
             <div class="naxie-message-actions">
-              <button class="naxie-action-btn naxie-btn-copy" title='Copy'>${ICONS.COPY}</button>
-              <button class="naxie-action-btn naxie-btn-regen" title='Regenerate'>${ICONS.REGEN}</button>
+              <button class="naxie-action-btn naxie-btn-copy" data-tooltip='Copy'>${ICONS.COPY}</button>
+              <button class="naxie-action-btn naxie-btn-regen" data-tooltip='Regenerate'>${ICONS.REGEN}</button>
             </div>
             <div class="naxie-refs-container"></div>
           `;
@@ -844,7 +921,10 @@ export class NaxieVanilla {
     const sendBtn = this.chatWindow.querySelector('.naxie-btn-send') as HTMLButtonElement;
     
     if (textarea) textarea.disabled = state.isLoading;
-    if (sendBtn) sendBtn.disabled = state.isLoading;
+    if (sendBtn) {
+        const isEmpty = textarea ? textarea.value.trim().length === 0 : true;
+        sendBtn.disabled = state.isLoading || isEmpty;
+    }
 
     // Update selected model name in UI
     const modelNameDisplay = this.chatWindow.querySelector('.naxie-model-name');
@@ -884,5 +964,63 @@ export class NaxieVanilla {
   destroy(): void {
     this.core.destroy();
     this.container.innerHTML = '';
+  }
+
+  private setupTooltips(specificContainer?: HTMLElement): void {
+    if (!this.tooltip) {
+      this.tooltip = document.createElement('div');
+      this.tooltip.className = 'naxie-tooltip';
+      document.body.appendChild(this.tooltip);
+    }
+
+    const showTooltip = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const elWithTooltip = target.closest('[data-tooltip]') as HTMLElement;
+      const tooltipText = elWithTooltip?.getAttribute('data-tooltip');
+      
+      if (tooltipText && this.tooltip) {
+        this.tooltip.textContent = tooltipText;
+        this.tooltip.classList.add('naxie-tooltip--visible');
+        this.updateTooltipPosition(elWithTooltip);
+      }
+    };
+
+    const hideTooltip = () => {
+      if (this.tooltip) {
+        this.tooltip.classList.remove('naxie-tooltip--visible');
+      }
+    };
+
+    const targetContainer = specificContainer || this.container;
+    targetContainer.addEventListener('mouseover', showTooltip);
+    targetContainer.addEventListener('mouseout', hideTooltip);
+  }
+
+  private updateTooltipPosition(target: HTMLElement): void {
+    if (!this.tooltip) return;
+    const rect = target.getBoundingClientRect();
+    const tooltipRect = this.tooltip.getBoundingClientRect();
+    
+    const top = rect.top - tooltipRect.height - 10;
+    const left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+    
+    // Safety boundaries
+    let finalLeft = Math.max(10, left);
+    if (finalLeft + tooltipRect.width > window.innerWidth - 10) {
+        finalLeft = window.innerWidth - tooltipRect.width - 10;
+    }
+
+    this.tooltip.style.top = `${top}px`;
+    this.tooltip.style.left = `${finalLeft}px`;
+  }
+
+  private updateTooltip(target: HTMLElement): void {
+    if (this.tooltip && this.tooltip.classList.contains('naxie-tooltip--visible')) {
+        const tooltipText = target.getAttribute('data-tooltip');
+        if (tooltipText) {
+            this.tooltip.textContent = tooltipText;
+            this.updateTooltipPosition(target);
+        }
+    }
   }
 }
